@@ -5,7 +5,7 @@
   "description": "Ecommerce website, amazon clone backend service",
   "main": "server.js",
   "scripts": {
-    "build": "npm run build",
+    "build": "npm cache clean --force && npm install",
     "start": "node server.js",
     "devstart": "nodemon --watch --exec node --experimental-modules server.js"
   },
@@ -13,7 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/ntrix/amazin-be.git"
   },
-  "author": "",
+  "author": "ntien",
   "license": "ISC",
   "homepage": "https://github.com/ntrix/amazin#readme",
   "dependencies": {
@@ -35,8 +35,7 @@
     "nodemon": "^2.0.4"
   },
   "engines": {
-    "node": "14.16.0",
-    "npm": "6.9.0"
+    "node": "12.20.0"
   },
   "bugs": {
     "url": "https://github.com/ntrix/amazin/issues"
