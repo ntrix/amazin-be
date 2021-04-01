@@ -1,0 +1,44 @@
+{
+  "name": "amazin-be",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Ecommerce website, amazon clone backend service",
+  "main": "server.js",
+  "scripts": {
+    "build": "npm run build",
+    "start": "node server.js",
+    "devstart": "nodemon --watch --exec node --experimental-modules server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ntrix/amazin-be.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://github.com/ntrix/amazin#readme",
+  "dependencies": {
+    "@sendgrid/mail": "^7.4.2",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.25.1",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-async-handler": "^1.1.4",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.10.7",
+    "mongoose-float": "^1.0.4",
+    "multer": "^1.4.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.9.0",
+    "eslint-plugin-react": "^7.21.2",
+    "nodemon": "^2.0.4"
+  },
+  "engines": {
+    "node": "14.16.0",
+    "npm": "6.9.0"
+  },
+  "bugs": {
+    "url": "https://github.com/ntrix/amazin/issues"
+  }
+}
