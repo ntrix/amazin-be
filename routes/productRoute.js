@@ -86,7 +86,7 @@ productRoute.get(
         : order === "oldest"
         ? { _id: 1 }
         : { _id: -1 }; /* date */
-    const count = await Product.count({
+    const count = await Product.countDocuments({
       ...sellerFilter,
       ...nameFilter,
       ...categoryFilter,
