@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import path from "path";
+import cors from "cors";
 import productRoute from "./routes/productRoute.js";
 import userRoute from "./routes/userRoute.js";
 import orderRoute from "./routes/orderRoute.js";
@@ -10,6 +11,7 @@ import uploadRoute from "./routes/uploadRoute.js";
 dotenv.config();
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
