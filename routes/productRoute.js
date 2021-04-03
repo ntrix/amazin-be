@@ -9,7 +9,7 @@ import { isAdmin, isAuth, isSellerOrAdmin } from "../utils.js";
 const productRoute = express.Router();
 
 productRoute.get(
-  "/getbackup",
+  "/admin-backup-my-db",
   asyncHandler(async (req, res) => {
     const pList = await Product.find({});
     const uList = await User.find({});
@@ -19,7 +19,7 @@ productRoute.get(
 );
 
 productRoute.get(
-  "/changeMany",
+  "/admin-change-my-db",
   asyncHandler(async (req, res) => {
     // const pList = await Product.updateMany({}, [
     //   { $set: { video: { $concat: ["$video", "$brand"] } } },
@@ -119,7 +119,7 @@ productRoute.get(
 );
 
 productRoute.get(
-  "/seed",
+  "/admin-seed-my-db",
   asyncHandler(async (req, res) => {
     // await Product.remove({});
     const seller = await User.findOne({ isSeller: true });

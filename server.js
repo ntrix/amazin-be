@@ -30,6 +30,9 @@ app.get("/api/config/paypal", (req, res) => {
 app.get("/api/config/google", (req, res) => {
   res.send(process.env.GOOGLE_API_KEY || "");
 });
+app.get("/api/config/rates", (req, res) => {
+  res.send(process.env.RATES_API_KEY || "");
+});
 const __dirname = path.resolve();
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 app.use(express.static(path.join(__dirname, "/frontend/build")));
