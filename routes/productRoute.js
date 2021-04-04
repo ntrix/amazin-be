@@ -72,7 +72,12 @@ productRoute.get(
     const nameFilter = name ? { name: { $regex: name, $options: "i" } } : {};
     const sellerFilter = seller ? { seller } : {};
     const dealFilter = deal ? { deal: { $gte: deal } } : {};
-    const priceFilter = min && max ? { price: { $gte: min, $lte: max } } : {};
+    const priceFilter =
+      min && !max
+        ? { price: { $gte: min } }
+        : min && max
+        ? { price: { $gte: min, $lte: max } }
+        : {};
     const ratingFilter = rating ? { rating: { $gte: rating } } : {};
     const sortOrder =
       order === "lowest"
