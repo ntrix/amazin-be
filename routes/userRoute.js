@@ -162,6 +162,13 @@ userRoute.put(
         user.seller.description =
           req.body.sellerDescription || user.seller.description;
       }
+
+      if (
+        req.body.oldPassword &&
+        !bcrypt.compareSync(req.body.oldPassword, user.password)
+      )
+        return res.status(401).send({ message: "Invalid email or password" });
+
       if (req.body.password) {
         user.password = bcrypt.hashSync(req.body.password, 8);
       }
