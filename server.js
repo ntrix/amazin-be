@@ -7,6 +7,7 @@ import productRoute from "./routes/productRoute.js";
 import userRoute from "./routes/userRoute.js";
 import orderRoute from "./routes/orderRoute.js";
 import uploadRoute from "./routes/uploadRoute.js";
+import axios from "axios";
 
 dotenv.config();
 
@@ -31,7 +32,12 @@ app.get("/api/config/google", (req, res) => {
   res.send(process.env.GOOGLE_API_KEY || "");
 });
 app.get("/api/config/rates", (req, res) => {
-  res.send(process.env.RATES_API_KEY || "");
+  axios
+    .get(
+      `http://api.exchangeratesapi.io/v1/latest?access_key=${process.env.RATES_API_KEY}`
+    )
+    .then((response) => res.send({ data: response.data }))
+    .catch((error) => res.status(404).send({ message: error }));
 });
 const __dirname = path.resolve();
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
