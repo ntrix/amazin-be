@@ -6,6 +6,7 @@ import cors from "cors";
 import data from "../data.js";
 import User from "../models/userModel.js";
 import { generateToken, isAdmin, isAuth } from "../utils.js";
+import { body, validationResult } from "express-validator";
 
 const userRoute = express.Router();
 
@@ -51,7 +52,18 @@ userRoute.get(
 
 userRoute.post(
   "/signin",
+  body("email", "Invalid email or password").isEmail().trim().escape(),
+  body("password", "Invalid email or password")
+    .isLength({ min: 8, max: 32 })
+    .trim()
+    .escape(),
   asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res
+        .status(400)
+        .json({ message: errors.array().map(({ msg }) => msg) });
+    }
     const user = await User.findOne({ email: req.body.email });
     if (!user)
       return res.status(401).send({ message: "Invalid email or password" });
@@ -109,13 +121,44 @@ userRoute.post(
           "Too many fail attempts! Please try again in 15 minutes or reset your password.",
       });
     }
-    user.save((err) => (err ? res.status(402).send({ message: err }) : 0));
+    try {
+      user.save();
+    } catch (err) {
+      res.status(402).send({ message: err });
+    }
   })
 );
 
 userRoute.post(
   "/register",
+
+  body("name", "Name must be 2-50 characters long")
+    .isLength({ min: 2, max: 50 })
+    .trim()
+    .escape(),
+  body("email", "Email address is invalid").isEmail().trim().escape(),
+  body("password")
+    .isLength({ min: 8, max: 32 })
+    .withMessage("Password must be 8-32 characters long")
+    .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/)
+    .withMessage(
+      "Password must have letter, number and special character (@$!%*#?&)"
+    )
+    .trim()
+    .escape(),
+  body("confirmPassword")
+    .custom((value, { req }) => value === req.body.password)
+    .withMessage("Password and Confirmation are not match")
+    .trim()
+    .escape(),
+
   asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res
+        .status(400)
+        .json({ message: errors.array().map(({ msg }) => msg) });
+    }
     const user = new User({
       name: req.body.name,
       email: req.body.email,
@@ -149,7 +192,29 @@ userRoute.use(isAuth);
 
 userRoute.put(
   "/profile",
+
+  body("name", "Name must be 2-50 characters long")
+    .isLength({ min: 2, max: 50 })
+    .trim()
+    .escape(),
+  body("email", "Email address is invalid").isEmail().trim().escape(),
+  body("password")
+    .isLength({ min: 8, max: 32 })
+    .withMessage("Password must be 8-32 characters long")
+    .trim()
+    .escape()
+    .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/)
+    .withMessage(
+      "Password must have letter, number and special character (@$!%*#?&)"
+    ),
+
   asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    if ((req.body.name || req.body.email) && !errors.isEmpty()) {
+      return res
+        .status(400)
+        .json({ message: errors.array().map(({ msg }) => msg) });
+    }
     const user = await User.findById(req.user._id);
     if (user) {
       user.name = req.body.name || user.name;
@@ -163,12 +228,14 @@ userRoute.put(
           req.body.sellerDescription || user.seller.description;
       }
 
-      if (
-        req.body.oldPassword &&
-        !bcrypt.compareSync(req.body.oldPassword, user.password)
-      )
-        return res.status(401).send({ message: "Invalid email or password" });
-
+      if (req.body.oldPassword) {
+        if (!bcrypt.compareSync(req.body.oldPassword, user.password))
+          return res.status(401).send({ message: "Invalid email or password" });
+        if (req.body.password !== req.body.confirmPassword)
+          return res
+            .status(401)
+            .send({ message: "Password and Confirmation are not match" });
+      }
       if (req.body.password) {
         user.password = bcrypt.hashSync(req.body.password, 8);
       }
