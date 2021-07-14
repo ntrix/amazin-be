@@ -52,7 +52,7 @@ userRoute.get(
 
 userRoute.post(
   "/signin",
-  body("email", "Invalid email or password").isEmail().trim().escape(),
+  body("email", "Invalid username or email").isEmail().trim().escape(),
   body("password", "Invalid email or password")
     .isLength({ min: 8, max: 32 })
     .trim()
@@ -66,7 +66,9 @@ userRoute.post(
     }
     const user = await User.findOne({ email: req.body.email });
     if (!user)
-      return res.status(401).send({ message: "Invalid email or password" });
+      return res
+        .status(401)
+        .send({ message: "Invalid username or email or password" });
 
     let count = (user.failLoginCount || 0) + 1;
 
