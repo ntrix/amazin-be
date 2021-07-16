@@ -45,7 +45,9 @@ app.get("/api/config/rates", (req, res) => {
 
 app.get("/api/config/crypto", (req, res) => {
   axios
-    .get(`https://api-pub.bitfinex.com/v2/tickers?symbols=ALL`)
+    .get(`https://api-pub.bitfinex.com/v2/tickers?symbols=ALL`, {
+      mode: "cors",
+    })
     .then((response) => res.send(response.data))
     .catch((error) => res.status(404).send({ message: error }));
 });
@@ -53,7 +55,8 @@ app.get("/api/config/crypto", (req, res) => {
 app.get("/api/config/BTCHist", (req, res) => {
   axios
     .get(
-      `https://api-pub.bitfinex.com/v2/candles/trade:1D:tBTCUSD/hist?limit=${req.query.count}`
+      `https://api-pub.bitfinex.com/v2/candles/trade:1D:tBTCUSD/hist?limit=${req.query.count}`,
+      { mode: "cors" }
     )
     .then((response) => res.send(response.data))
     .catch((error) => res.status(404).send({ message: error }));
