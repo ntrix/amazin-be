@@ -7,7 +7,7 @@ import productRoute from "./routes/productRoute.js";
 import userRoute from "./routes/userRoute.js";
 import orderRoute from "./routes/orderRoute.js";
 import uploadRoute from "./routes/uploadRoute.js";
-import axios from "axios";
+import configRoute from "./routes/configRoute.js";
 
 dotenv.config();
 
@@ -25,42 +25,7 @@ app.use("/api/uploads", uploadRoute);
 app.use("/api/users", userRoute);
 app.use("/api/products", productRoute);
 app.use("/api/orders", orderRoute);
-
-app.get("/api/config/paypal", (req, res) => {
-  res.send(process.env.PAYPAL_CLIENT_ID || "sb");
-});
-
-app.get("/api/config/google", (req, res) => {
-  res.send(process.env.GOOGLE_API_KEY || "");
-});
-
-app.get("/api/config/rates", (req, res) => {
-  axios
-    .get(
-      `http://api.exchangeratesapi.io/v1/latest?access_key=${process.env.RATES_API_KEY}`
-    )
-    .then((response) => res.send({ data: response.data }))
-    .catch((error) => res.status(404).send({ message: error }));
-});
-
-app.get("/api/config/crypto", (req, res) => {
-  axios
-    .get(`https://api-pub.bitfinex.com/v2/tickers?symbols=ALL`, {
-      mode: "cors",
-    })
-    .then((response) => res.send(response.data))
-    .catch((error) => res.status(404).send({ message: error }));
-});
-
-app.get("/api/config/BTCHist", (req, res) => {
-  axios
-    .get(
-      `https://api-pub.bitfinex.com/v2/candles/trade:1D:tBTCUSD/hist?limit=${req.query.count}`,
-      { mode: "cors" }
-    )
-    .then((response) => res.send(response.data))
-    .catch((error) => res.status(404).send({ message: error }));
-});
+app.use("/api/config", configRoute);
 
 const __dirname = path.resolve();
 
