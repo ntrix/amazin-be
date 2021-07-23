@@ -1,7 +1,13 @@
 import express from "express";
 import axios from "axios";
 const configRoute = express.Router();
-const cached = {};
+import cacheManager from "cache-manager";
+const memoryCache = cacheManager.caching({
+  store: "memory",
+  max: 100,
+  ttl: 24 * 60 * 60 /*seconds*/,
+});
+const ttl = 4 * 60 * 60;
 
 configRoute.get("/paypal", (req, res) => {
   res.send(process.env.PAYPAL_CLIENT_ID || "sb");
@@ -12,20 +18,26 @@ configRoute.get("/google", (req, res) => {
 });
 
 configRoute.get("/rates", (req, res) => {
-  if (cached.timestamp && Date.now() - cached.timestamp < 1000 * 60 * 60 * 4) {
-    res.send({ data: { rates: cached.rates } });
-    return;
-  }
-  axios
-    .get(
-      `http://api.exchangeratesapi.io/v1/latest?access_key=${process.env.RATES_API_KEY}`
-    )
-    .then((response) => {
-      cached.rates = response.data.rates;
-      cached.timestamp = response.data.timestamp;
-      res.send({ data: { rates: cached.rates } });
-    })
-    .catch((error) => res.status(500).send({ message: error }));
+  const key = "rates";
+
+  memoryCache.get(key, function (err, result) {
+    if (result) {
+      res.send({ data: JSON.parse(result) });
+      return;
+    }
+
+    axios
+      .get(
+        `http://api.exchangeratesapi.io/v1/latest?access_key=${process.env.RATES_API_KEY}`
+      )
+      .then((response) => {
+        memoryCache.set(key, JSON.stringify(response.data), { ttl }, (_err) => {
+          if (_err) throw _err;
+        });
+        res.send({ data: response.data });
+      })
+      .catch((error) => res.status(500).send({ message: error }));
+  });
 });
 
 configRoute.get("/crypto", (req, res) => {
