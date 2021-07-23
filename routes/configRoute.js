@@ -41,12 +41,31 @@ configRoute.get("/rates", (req, res) => {
 });
 
 configRoute.get("/crypto", (req, res) => {
-  axios
-    .get(`https://api-pub.bitfinex.com/v2/tickers?symbols=ALL`, {
-      mode: "cors",
-    })
-    .then((response) => res.send(response.data))
-    .catch((error) => res.status(500).send({ message: error }));
+  const key = "crypto";
+
+  memoryCache.get(key, function (err, result) {
+    if (result) {
+      res.send({ data: JSON.parse(result) });
+      return;
+    }
+
+    axios
+      .get(`https://api-pub.bitfinex.com/v2/tickers?symbols=ALL`, {
+        mode: "cors",
+      })
+      .then((response) => {
+        memoryCache.set(
+          key,
+          JSON.stringify(response.data),
+          { ttl: 60 * 60 },
+          (_err) => {
+            if (_err) throw _err;
+          }
+        );
+        res.send({ data: response.data });
+      })
+      .catch((error) => res.status(500).send({ message: error }));
+  });
 });
 
 configRoute.get("/BTCHist", (req, res) => {
