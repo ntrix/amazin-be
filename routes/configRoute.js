@@ -1,10 +1,7 @@
 import express from "express";
 import axios from "axios";
 const configRoute = express.Router();
-const cached = {
-  rates: null,
-  timestamp: 0,
-};
+const cached = {};
 
 configRoute.get("/paypal", (req, res) => {
   res.send(process.env.PAYPAL_CLIENT_ID || "sb");
@@ -15,8 +12,8 @@ configRoute.get("/google", (req, res) => {
 });
 
 configRoute.get("/rates", (req, res) => {
-  if (cached?.timestamp && Date.now() - cached.timestamp < 1000 * 60 * 60 * 4) {
-    res.send({ data: cached });
+  if (cached.timestamp && Date.now() - cached.timestamp < 1000 * 60 * 60 * 4) {
+    res.send({ data: { rates: cached.rates } });
     return;
   }
   axios
@@ -26,7 +23,7 @@ configRoute.get("/rates", (req, res) => {
     .then((response) => {
       cached.rates = response.data.rates;
       cached.timestamp = response.data.timestamp;
-      res.send({ data: cached });
+      res.send({ data: { rates: cached.rates } });
     })
     .catch((error) => res.status(500).send({ message: error }));
 });
