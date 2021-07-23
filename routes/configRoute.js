@@ -15,13 +15,14 @@ configRoute.get("/google", (req, res) => {
 });
 
 configRoute.get("/rates", (req, res) => {
-  if (cached?.timestamp && Date.now() - cached.timestamp < 1000 * 60 * 60 * 4) {
+  if (cached.timestamp && Date.now() - cached.timestamp < 1000 * 60 * 60 * 4) {
     res.send({ data: cached });
     return;
   }
   axios
     .get(
-      `http://api.exchangeratesapi.io/v1/latest?access_key=${process.env.RATES_API_KEY}`
+      `http://api.exchangeratesapi.io/v1/latest?access_key=${process.env.RATES_API_KEY}`,
+      { mode: "cors" }
     )
     .then((response) => {
       cached.rates = response.data.rates;
