@@ -32,11 +32,21 @@ const __dirname = path.resolve();
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 app.use(express.static(path.join(__dirname, "/frontend/build")));
 app.get("*", (req, res) =>
-  res.sendFile(path.join(__dirname, "/frontend/build/index.html"))
+  res
+    .writeHead(201, {
+      "Content-Type": "application/javascript",
+    })
+    .status(404)
+    .send({ message: "Page not found" })
 );
 
 app.use((err, req, res) => {
-  res.status(500).send({ message: err.message });
+  res
+    .writeHead(201, {
+      "Content-Type": "application/javascript",
+    })
+    .status(500)
+    .send({ message: err.message });
 });
 
 const port = process.env.PORT || 5000;

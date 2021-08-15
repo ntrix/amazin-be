@@ -40,7 +40,7 @@ productRoute.get(
   asyncHandler(async (req, res) => {
     const category = req.query.category || "";
     const categoryFilter = category ? { category } : {};
-    let pageSize = Number(req.query.pageSize) || 6;
+    const pageSize = Number(req.query.pageSize) || 6;
     if (pageSize == 999) {
       // only for Search function: categories scope purpose
       const list = await Product.find(categoryFilter);
@@ -79,18 +79,13 @@ productRoute.get(
         ? { price: { $gte: min, $lte: max } }
         : {};
     const ratingFilter = rating ? { rating: { $gte: rating } } : {};
-    const sortOrder =
-      order === "lowest"
-        ? { price: 1 }
-        : order === "highest"
-        ? { price: -1 }
-        : order === "toprated"
-        ? { rating: -1 }
-        : order === "bestselling"
-        ? { numReviews: -1 }
-        : order === "oldest"
-        ? { _id: 1 }
-        : { _id: -1 }; /* date */
+    const sortOrder = {
+      lowest: { price: 1 },
+      highest: { price: -1 },
+      toprated: { rating: -1 },
+      bestselling: { numReviews: -1 },
+      oldest: { _id: 1 },
+    }[order] || { _id: -1 }; /* date */
     const count = await Product.countDocuments({
       ...sellerFilter,
       ...nameFilter,
@@ -111,7 +106,13 @@ productRoute.get(
       .sort(sortOrder)
       .skip(pageSize > 500 ? 0 : pageSize * (page - 1)) /* > 500 = all */
       .limit(pageSize > 500 ? 0 : pageSize);
-    res.send({ products, page, pages: Math.ceil(count / pageSize), count });
+    res.send({
+      products,
+      page,
+      count,
+      category: category || "All",
+      pages: Math.ceil(count / pageSize),
+    });
   })
 );
 
