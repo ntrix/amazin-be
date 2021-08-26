@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import uploadControllers from "../controllers/uploadControllers.js";
-import { isAuth } from "../utils.js";
+import { checkToken } from "../auth/token.js";
 
 const uploadRoute = express.Router();
 
@@ -20,11 +20,16 @@ const upload = multer({ dest: "uploads/" });
 
 uploadRoute.post(
   "/",
-  isAuth,
+  checkToken,
   upload.array("images", 8),
   uploadControllers.uploadImages
 );
 
-uploadRoute.patch("/", isAuth, upload.none(), uploadControllers.updateImages);
+uploadRoute.patch(
+  "/",
+  checkToken,
+  upload.none(),
+  uploadControllers.updateImages
+);
 
 export default uploadRoute;

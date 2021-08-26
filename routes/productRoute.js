@@ -1,7 +1,8 @@
 import express from "express";
 import asyncHandler from "express-async-handler";
 import productControllers from "../controllers/productControllers.js";
-import { isAdmin, isAuth, isSellerOrAdmin } from "../utils.js";
+import { checkToken } from "../auth/token.js";
+import { isAdmin, isSellerOrAdmin } from "../auth/rolls.js";
 
 const productRoute = express.Router();
 
@@ -23,7 +24,7 @@ productRoute.get("/admin-seed-my-db", asyncHandler(productControllers.seedDB));
 
 productRoute.get("/:id", asyncHandler(productControllers.getProduct));
 
-productRoute.use(isAuth);
+productRoute.use(checkToken);
 
 productRoute.post(
   "/",

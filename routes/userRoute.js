@@ -3,7 +3,8 @@ import express from "express";
 import asyncHandler from "express-async-handler";
 import { body } from "express-validator";
 import userControllers from "../controllers/userControllers.js";
-import { isAdmin, isAuth } from "../utils.js";
+import { checkToken } from "../auth/token.js";
+import { isAdmin } from "../auth/rolls.js";
 
 const userRoute = express.Router();
 
@@ -51,7 +52,7 @@ userRoute.post(
 
 userRoute.get("/:id", asyncHandler(userControllers.getUser));
 
-userRoute.use(isAuth);
+userRoute.use(checkToken);
 
 userRoute.put(
   "/profile",

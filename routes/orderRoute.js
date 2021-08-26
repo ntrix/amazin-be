@@ -1,11 +1,12 @@
 import express from "express";
 import asyncHandler from "express-async-handler";
 import orderControllers from "../controllers/orderControllers.js";
-import { isAdmin, isAuth, isSellerOrAdmin } from "../utils.js";
+import { checkToken } from "../auth/token.js";
+import { isAdmin, isSellerOrAdmin } from "../auth/rolls.js";
 
 const orderRoute = express.Router();
 
-orderRoute.use(isAuth);
+orderRoute.use(checkToken);
 
 orderRoute.get("/", isSellerOrAdmin, asyncHandler(orderControllers.getOrders));
 

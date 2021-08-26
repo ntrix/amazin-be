@@ -1,5 +1,5 @@
 import express from "express";
-import configControllers from "../controllers/configControllers";
+import configControllers from "../controllers/configControllers.js";
 const configRoute = express.Router();
 
 configRoute.get("/paypal", configControllers.getPaypal);

@@ -1,8 +1,9 @@
 import sgMail from "@sendgrid/mail";
 import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
+import { generateToken } from "../auth/token.js";
 import User from "../models/userModel.js";
-import { generateToken } from "../utils.js";
+import data from "../data.js";
 
 const userControllers = {
   postContact(req, res) {
