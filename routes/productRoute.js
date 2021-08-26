@@ -7,12 +7,12 @@ import { isAdmin, isSellerOrAdmin } from "../auth/rolls.js";
 const productRoute = express.Router();
 
 productRoute.get(
-  "/admin-backup-my-db",
+  "/admin-backup-my-db" + process.env.DB_key,
   asyncHandler(productControllers.adminBackup)
 );
 
 productRoute.get(
-  "/admin-change-my-db",
+  "/admin-change-my-db" + process.env.DB_key,
   asyncHandler(productControllers.adminUpdate)
 );
 

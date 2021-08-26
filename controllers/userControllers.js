@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
 import { generateToken } from "../auth/token.js";
 import User from "../models/userModel.js";
-import data from "../data.js";
+import { data } from "../seed.data.js";
 
 const userControllers = {
   postContact(req, res) {

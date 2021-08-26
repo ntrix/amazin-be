@@ -1,4 +1,4 @@
-import data from "../data2.js";
+import { movies } from "../seed.data.js";
 import Order from "../models/orderModel.js";
 import Product from "../models/productModel.js";
 import User from "../models/userModel.js";
@@ -112,7 +112,7 @@ const productControllers = {
     // await Product.remove({});
     const seller = await User.findOne({ isSeller: true });
     if (seller) {
-      const products = data.products.map((product) => ({
+      const products = movies.products.map((product) => ({
         ...product,
         seller: seller._id,
       }));
