@@ -20,7 +20,7 @@ const uploadControllers = {
 
       const images = req.files;
       if (!images)
-        return res.status(404).send({ message: "No Image has been sent" });
+        return res.status(411).send({ message: "No Image has been sent" });
 
       const cloudImages = images.map(
         (image) =>
@@ -42,7 +42,7 @@ const uploadControllers = {
           product.save();
           res.send(urls);
         })
-        .catch((error) => res.status(401).send({ message: "here" + error }));
+        .catch((error) => res.status(503).send({ message: "here" + error }));
     })();
   },
 
@@ -59,7 +59,7 @@ const uploadControllers = {
       const product = await Product.findById(productId);
       if (!product)
         return res
-          .status(404)
+          .status(417)
           .send({ message: "Something wrong happens. Product Not Found" });
 
       cloudinary.v2.uploader.destroy(`amazin/${productId}/${imgName}`);
@@ -69,7 +69,7 @@ const uploadControllers = {
         product.save();
         res.send({ message: "updated to DB" });
       } catch (error) {
-        res.status(500).send({ message: error });
+        res.status(503).send({ message: error });
       }
     })();
   },

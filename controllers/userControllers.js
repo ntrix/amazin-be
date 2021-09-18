@@ -46,13 +46,13 @@ const userControllers = {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: errors.array().map(({ msg }) => msg) });
     }
     const user = await User.findOne({ email: req.body.email });
     if (!user)
       return res
-        .status(401)
+        .status(404)
         .send({ message: "Invalid username or email or password" });
 
     let count = (user.failLoginCount || 0) + 1;
@@ -74,7 +74,7 @@ const userControllers = {
     user.failLoginCount = count;
     if (count < 3)
       res
-        .status(501)
+        .status(401)
         .send({ message: "Wrong password! " + count + " of 4 attempts." });
     else if (count < 5) {
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -87,11 +87,11 @@ const userControllers = {
       };
       try {
         await sgMail.send(msg);
-        res.status(502).send({
+        res.status(401).send({
           message: `${count} fail attempts. A warning message has been sent to the registered email address!`,
         });
       } catch (err) {
-        res.status(504).send({
+        res.status(401).send({
           message: `${count} fail attempts. A warning message has been sent, but the registered email cannot receive any message! Error: ${err}`,
         });
       }
@@ -103,7 +103,7 @@ const userControllers = {
         user.save((err) => (err ? res.status(402).send({ message: err }) : 0));
       }, 15 * 60 * 1000);
       user.failLoginCount = waitingSingleton + 5; //save timeoutId instead the counter, +5 for surely have more than 4 fail attempts
-      res.status(503).send({
+      res.status(403).send({
         message:
           "Too many fail attempts! Please try again in 15 minutes or reset your password.",
       });
@@ -111,7 +111,7 @@ const userControllers = {
     try {
       user.save();
     } catch (err) {
-      res.status(402).send({ message: err });
+      res.status(403).send({ message: err });
     }
   },
 
@@ -119,7 +119,7 @@ const userControllers = {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res
-        .status(400)
+        .status(406)
         .json({ message: errors.array().map(({ msg }) => msg) });
     }
     const user = new User({
@@ -151,7 +151,7 @@ const userControllers = {
     const errors = validationResult(req);
     if ((req.body.name || req.body.email) && !errors.isEmpty()) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: errors.array().map(({ msg }) => msg) });
     }
     const user = await User.findById(req.user._id);
@@ -200,7 +200,7 @@ const userControllers = {
     const user = await User.findById(req.params.id);
     if (user) {
       if (user.email === "admin@example.com") {
-        res.status(400).send({ message: "Can Not Delete Admin User" });
+        res.status(403).send({ message: "Can Not Delete Admin User" });
         return;
       }
       const deleteUser = await user.remove();

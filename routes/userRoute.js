@@ -42,6 +42,13 @@ userRoute.put(
   asyncHandler(userControllers.updateProfile)
 );
 
+/* submit contact form */
+userRoute.patch(
+  "/profile",
+  validate.email(),
+  asyncHandler(userControllers.updateProfile)
+);
+
 userRoute.get("/", isAdmin, asyncHandler(userControllers.getAllUsers));
 
 userRoute.delete("/:id", isAdmin, asyncHandler(userControllers.deleteUser));

@@ -19,7 +19,7 @@ const orderControllers = {
 
   async createOrder(req, res) {
     if (req.body.orderItems.length === 0) {
-      res.status(400).send({ message: "Cart is empty" });
+      res.status(411).send({ message: "Cart is empty" });
     } else {
       const order = new Order({
         seller: req.body.orderItems[0].seller,

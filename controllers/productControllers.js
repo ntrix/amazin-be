@@ -120,7 +120,7 @@ const productControllers = {
       res.send({ createdProducts });
     } else {
       res
-        .status(500)
+        .status(404)
         .send({ message: "No seller found. first run /api/users/seed" });
     }
   },
@@ -191,7 +191,7 @@ const productControllers = {
     if (product) {
       if (product.reviews.find((x) => x.name === req.user.name)) {
         return res
-          .status(400)
+          .status(409)
           .send({ message: "You already submitted a review" });
       }
       const review = {
