@@ -122,6 +122,10 @@ const userControllers = {
         .status(406)
         .json({ message: errors.array().map(({ msg }) => msg) });
     }
+    const existUser = await User.findOne({ email: req.body.email });
+    if (existUser) {
+      return res.status(409).json({ message: "Email is already in use!" });
+    }
     const user = new User({
       name: req.body.name,
       email: req.body.email,
