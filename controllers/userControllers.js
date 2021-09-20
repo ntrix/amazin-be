@@ -165,10 +165,11 @@ const userControllers = {
       user.currency = req.body.currency || user.currency;
       if (user.isSeller || req.body.verify) {
         user.isSeller = true; //verify and apply new seller profile from user acc
-        user.seller.name = req.body.sellerName || user.seller.name || user.name;
-        user.seller.logo = req.body.sellerLogo || user.seller.logo;
+        user.seller.name =
+          req.body.seller.name || user.seller.name || user.name;
+        user.seller.logo = req.body.seller.logo || user.seller.logo;
         user.seller.description =
-          req.body.sellerDescription || user.seller.description;
+          req.body.seller.description || user.seller.description;
       }
 
       if (req.body.oldPassword) {
