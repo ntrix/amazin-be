@@ -20,9 +20,9 @@ const validate = {
     body("password")
       .isLength({ min: 8, max: 32 })
       .withMessage("Password must be 8-32 characters long")
-      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]{8,}$/)
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]/)
       .withMessage(
-        "Password must have min 8 characters, at least a number, an uppercase and a lowercase letter"
+        "Password must have at least one digit, lowercase and uppercase characters"
       )
       .trim()
       .escape(),
