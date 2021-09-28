@@ -169,6 +169,7 @@ const userControllers = {
     user.currency = req.body.currency || user.currency;
 
     if (user.isSeller || req.body.verify) {
+      if (!req.body.seller) req.body.seller = {};
       user.isSeller = true; //verify and apply new seller profile from user acc
       user.seller.name = req.body.seller.name || user.seller.name || user.name;
       user.seller.logo = req.body.seller.logo || user.seller.logo;
