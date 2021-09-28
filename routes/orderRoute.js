@@ -10,16 +10,19 @@ orderRoute.use(checkToken);
 
 orderRoute.get("/", isSellerOrAdmin, asyncHandler(orderControllers.getOrders));
 
-orderRoute.get("/mine", asyncHandler(orderControllers.getMyOrder));
+orderRoute.get("/mine", asyncHandler(orderControllers.getMyOrders));
 
 orderRoute.post("/", asyncHandler(orderControllers.createOrder));
 
+// auth buyer, auth seller or admin
 orderRoute.get("/:id", asyncHandler(orderControllers.getOrder));
 
+// auth buyer, auth seller or admin
 orderRoute.put("/:id/pay", asyncHandler(orderControllers.updateOrderPay));
 
 orderRoute.delete("/:id", isAdmin, asyncHandler(orderControllers.deleteOrder));
 
+// auth seller or Admin
 orderRoute.put(
   "/:id/deliver",
   isAdmin,
