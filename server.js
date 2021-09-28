@@ -1,4 +1,5 @@
 import express from "express";
+import helmet from "helmet";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import path from "path";
@@ -12,6 +13,11 @@ import configRoute from "./routes/configRoute.js";
 dotenv.config();
 
 const app = express();
+app.use(
+  helmet({
+    referrerPolicy: { policy: "no-referrer-when-downgrade" },
+  })
+);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
