@@ -5,6 +5,8 @@ import { generateToken } from "../auth/token.js";
 import User from "../models/userModel.js";
 import { data } from "../seed.data.js";
 
+const NOT_FOUND = "User Not Found";
+
 const userControllers = {
   postContact(req, res) {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -147,53 +149,56 @@ const userControllers = {
     if (user) {
       res.send(user);
     } else {
-      res.status(404).send({ message: "User Not Found" });
+      res.status(404).send({ message: NOT_FOUND });
     }
   },
 
   async updateProfile(req, res) {
     const errors = validationResult(req);
-    if ((req.body.name || req.body.email) && !errors.isEmpty()) {
+    if ((req.body.name || req.body.email) && !errors.isEmpty())
       return res
         .status(401)
         .json({ message: errors.array().map(({ msg }) => msg) });
-    }
-    const user = await User.findById(req.user._id);
-    if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
-      user.currency = req.body.currency || user.currency;
-      if (user.isSeller || req.body.verify) {
-        user.isSeller = true; //verify and apply new seller profile from user acc
-        user.seller.name =
-          req.body.seller.name || user.seller.name || user.name;
-        user.seller.logo = req.body.seller.logo || user.seller.logo;
-        user.seller.description =
-          req.body.seller.description || user.seller.description;
-      }
 
-      if (req.body.oldPassword) {
-        if (!bcrypt.compareSync(req.body.oldPassword, user.password))
-          return res.status(401).send({ message: "Invalid email or password" });
-        if (req.body.password !== req.body.confirmPassword)
-          return res
-            .status(401)
-            .send({ message: "Password and Confirmation are not match" });
-      }
-      if (req.body.password) {
-        user.password = bcrypt.hashSync(req.body.password, 8);
-      }
-      const updatedUser = await user.save();
-      res.send({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        currency: updatedUser.currency,
-        isAdmin: updatedUser.isAdmin,
-        isSeller: user.isSeller,
-        token: generateToken(updatedUser),
-      });
+    const user = await User.findById(req.user._id);
+
+    if (!user) return res.status(404).json({ message: NOT_FOUND });
+
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.currency = req.body.currency || user.currency;
+
+    if (user.isSeller || req.body.verify) {
+      if (!req.body.seller) req.body.seller = {};
+      user.isSeller = true; //verify and apply new seller profile from user acc
+      user.seller.name = req.body.seller.name || user.seller.name || user.name;
+      user.seller.logo = req.body.seller.logo || user.seller.logo;
+      user.seller.description =
+        req.body.seller.description || user.seller.description;
     }
+
+    if (req.body.oldPassword) {
+      if (!bcrypt.compareSync(req.body.oldPassword, user.password))
+        return res.status(401).send({ message: "Invalid email or password" });
+      if (req.body.password !== req.body.confirmPassword)
+        return res
+          .status(401)
+          .send({ message: "Password and Confirmation are not match" });
+    }
+
+    if (req.body.password)
+      user.password = bcrypt.hashSync(req.body.password, 8);
+
+    const updatedUser = await user.save();
+    return res.send({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      currency: updatedUser.currency,
+      isAdmin: updatedUser.isAdmin,
+      isSeller: user.isSeller,
+      token: generateToken(updatedUser),
+    });
   },
 
   async getAllUsers(req, res) {
@@ -203,36 +208,31 @@ const userControllers = {
 
   async deleteUser(req, res) {
     const user = await User.findById(req.params.id);
-    if (user) {
-      if (user.email === "admin@example.com") {
-        res.status(403).send({ message: "Can Not Delete Admin User" });
-        return;
-      }
-      const deleteUser = await user.remove();
-      res.send({ message: "User Deleted", user: deleteUser });
-    } else {
-      res.status(404).send({ message: "User Not Found" });
-    }
+    if (!user) return res.status(404).send({ message: NOT_FOUND });
+
+    if (user.email === "admin@admin.com" || user.isAdmin)
+      return res.status(403).send({ message: "Can Not Delete Admin User" });
+
+    const deleteUser = await user.remove();
+    return res.send({ message: "User Deleted", user: deleteUser });
   },
 
   async editUser(req, res) {
     const user = await User.findById(req.params.id);
-    if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
+    if (!user) return res.status(404).send({ message: NOT_FOUND });
 
-      user.isAdmin = Boolean(req.body.isAdmin);
-      // user.isAdmin = req.body.isAdmin || user.isAdmin;
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
 
-      user.isSeller = Boolean(req.body.isSeller);
-      user.seller.name = user.seller.name || user.name;
-      user.seller.logo = user.seller.logo || "/images/default-logo.png";
+    user.isAdmin = Boolean(req.body.isAdmin);
+    // user.isAdmin = req.body.isAdmin || user.isAdmin;
 
-      const updatedUser = await user.save();
-      res.send({ message: "User Updated", user: updatedUser });
-    } else {
-      res.status(404).send({ message: "User Not Found" });
-    }
+    user.isSeller = Boolean(req.body.isSeller);
+    user.seller.name = user.seller.name || user.name;
+    user.seller.logo = user.seller.logo || "/images/default-logo.png";
+
+    const updatedUser = await user.save();
+    return res.send({ message: "User Updated", user: updatedUser });
   },
 };
 

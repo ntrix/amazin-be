@@ -1,4 +1,4 @@
-const INVALID = "Invalid Token";
+const INVALID = "You are not authorized";
 
 export const isAdmin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {

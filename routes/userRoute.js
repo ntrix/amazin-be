@@ -45,7 +45,7 @@ userRoute.put(
 /* submit contact form */
 userRoute.patch(
   "/profile",
-  validate.email(),
+  validate.id(),
   asyncHandler(userControllers.updateProfile)
 );
 

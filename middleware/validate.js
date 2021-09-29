@@ -1,6 +1,8 @@
 import { body } from "express-validator";
 
 const validate = {
+  id: () => body("_id").custom((_id, { req }) => _id === req.user._id),
+
   email: () =>
     body("email", "Invalid username or email").isEmail().trim().escape(),
 

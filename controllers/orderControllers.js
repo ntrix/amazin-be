@@ -45,7 +45,10 @@ const orderControllers = {
 
     if (!order) return res.status(404).send({ message: NOT_FOUND });
 
-    if (![order.user, order.seller].includes(req.user._id) && !req.user.isAdmin)
+    if (
+      ![String(order.user), String(order.seller)].includes(req.user._id) &&
+      !req.user.isAdmin
+    )
       return res.status(401).send({ message: UNAUTHORIZED });
 
     return res.send(order);
@@ -56,7 +59,10 @@ const orderControllers = {
 
     if (!order) return res.status(404).send({ message: NOT_FOUND });
 
-    if (![order.user, order.seller].includes(req.user._id) && !req.user.isAdmin)
+    if (
+      ![String(order.user), String(order.seller)].includes(req.user._id) &&
+      !req.user.isAdmin
+    )
       return res.status(401).send({ message: UNAUTHORIZED });
 
     order.isPaid = true;
@@ -85,7 +91,7 @@ const orderControllers = {
 
     if (!order) return res.status(404).send({ message: NOT_FOUND });
 
-    if (order.seller !== req.user._id && !req.user.isAdmin)
+    if (String(order.seller) !== req.user._id && !req.user.isAdmin)
       return res.status(401).send({ message: UNAUTHORIZED });
 
     order.isDelivered = true;
