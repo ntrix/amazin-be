@@ -196,7 +196,8 @@ const userControllers = {
       email: updatedUser.email,
       currency: updatedUser.currency,
       isAdmin: updatedUser.isAdmin,
-      isSeller: user.isSeller,
+      isSeller: updatedUser.isSeller,
+      seller: updatedUser.seller,
       token: generateToken(updatedUser),
     });
   },
