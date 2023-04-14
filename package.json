@@ -6,8 +6,8 @@
   "main": "server.js",
   "scripts": {
     "build": "npm cache clean --force && npm install",
-    "start": "node server.js",
-    "devstart": "nodemon --watch --exec node --experimental-modules server.js"
+    "devstart": "node server.js",
+    "start": "nodemon --watch --exec node --experimental-modules server.js"
   },
   "repository": {
     "type": "git",
