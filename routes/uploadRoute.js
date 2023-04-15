@@ -16,7 +16,7 @@ const uploadRoute = express.Router();
 
 // const upload = multer({ storage });
 
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: "/tmp/uploads/" });
 
 uploadRoute.post(
   "/",
