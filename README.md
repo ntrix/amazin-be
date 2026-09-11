@@ -1,5 +1,10 @@
 # Welcome to Amazin' Amazim Store — Backend
 
+[![CI](https://github.com/ntrix/amazin-be/actions/workflows/test.yml/badge.svg)](https://github.com/ntrix/amazin-be/actions/workflows/test.yml)
+[![codecov](https://codecov.io/github/ntrix/amazin-be/branch/main/badge.svg)](https://codecov.io/github/ntrix/amazin-be)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=ntrix_amazin-be&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=ntrix_amazin-be)
+<a href="https://sonarcloud.io/summary/new_code?id=ntrix_amazin-be"><img src="https://sonarcloud.io/images/project_badges/sonarcloud-highlight.svg" alt="SonarQube Cloud" height="20"></a>
+
 ## A Node.js / Express / MongoDB REST API for the Amazin Amazon (& Netflix & ...) Clone
 
 ## What is Amazin Backend?
@@ -50,8 +55,8 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | 03   | MongoDB Atlas cluster resumed after long inactivity pause                     | Done     |
 | 04   | `engines.node` updated `12.x` → `24.x` (Node 12 unsupported on modern hosts)  | Done     |
 | 05   | Fix `ERR_HTTP_HEADERS_SENT` crash loop: dead `frontend/build` static mount, missing `next` param on error handler, `writeHead()` clobbering `.status()` | Done |
-| 06   | Automated tests                                                                | **Todo** |
-| 07   | CI (GitHub Actions)                                                            | **Todo** |
+| 06   | Automated tests: Vitest + Supertest + mongodb-memory-server                   | Done     |
+| 07   | CI (GitHub Actions) + [Codecov][codecov] + [SonarQube Cloud][sonar]           | Done     |
 
 ## How to run this project
 
@@ -65,6 +70,8 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 [mongoose]: https://mongoosejs.com/
 [atlas]: https://www.mongodb.com/cloud/atlas
 [render]: https://render.com/
+[codecov]: https://codecov.io/
+[sonar]: https://sonarcloud.io/
 [fenx]: https://github.com/ntrix/amazin
 [bev1]: https://github.com/ntrix/amazin-be
 [stackbe]: https://raw.githubusercontent.com/ntrix/amazin/nx/apps/amazin/src/stories/img/mongo-express-react-node-atlas-mongoose-heroku-1000.png
