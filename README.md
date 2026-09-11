@@ -67,7 +67,7 @@ Unit tests run on every push/PR via GitHub Actions, with coverage reported to Co
 - ~53% line coverage
 - Real, ephemeral MongoDB per test file (`mongodb-memory-server`) — never touches the production Atlas cluster
 
-Organized around this API's actual 4 layers — not a copy-paste of the frontend's Presentation/Application/Domain/Infrastructure split, since a backend has no UI and Mongoose schemas are persistence (Infrastructure), not framework-independent business rules (Domain):
+Organized around this API's own 4 layers (Interface → Application → Domain → Infrastructure):
 
 | Layer | Covers | Test files |
 | ----- | ------ | ---------- |
