@@ -33,6 +33,7 @@ const userControllers = {
 
   async getTopSellers(req, res) {
     const topSellers = await User.find({ isSeller: true })
+      .select("-password")
       .sort({ "seller.rating": -1 })
       .limit(5);
     res.send(topSellers);
