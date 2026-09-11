@@ -39,7 +39,9 @@ const userControllers = {
   },
 
   async seed(req, res) {
-    // await User.remove({});
+    if ((await User.countDocuments()) > 0) {
+      return res.status(403).send({ message: "Already seeded" });
+    }
     const createdUsers = await User.insertMany(data.users);
     res.send({ createdUsers });
   },
