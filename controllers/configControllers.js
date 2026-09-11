@@ -51,7 +51,7 @@ const configControllers = {
       .get(`https://api-pub.bitfinex.com/v2/tickers?symbols=ALL`, {
         mode: "cors",
       })
-      .then((response) => res.send(response.data))
+      .then((response) => res.json(response.data))
       .catch((error) => res.status(500).send({ message: error }));
   },
 
@@ -61,7 +61,7 @@ const configControllers = {
         `https://api-pub.bitfinex.com/v2/candles/trade:1D:tBTCUSD/hist?limit=${req.query.count}`,
         { mode: "cors" }
       )
-      .then((response) => res.send(response.data))
+      .then((response) => res.json(response.data))
       .catch((error) => res.status(404).send({ message: error }));
   },
 };
