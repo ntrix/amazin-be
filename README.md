@@ -59,6 +59,23 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | 07   | CI (GitHub Actions) + [Codecov][codecov] + [SonarQube Cloud][sonar]           | Done     |
 | 08   | Repo switched from private to public (09/2026)                                | Done     |
 
+## Test Coverage
+
+Unit tests run on every push/PR via GitHub Actions, with coverage reported to Codecov and code smells to SonarQube Cloud (badges at the top of this page).
+
+- 14 test files, 40 tests
+- ~53% line coverage
+- Real, ephemeral MongoDB per test file (`mongodb-memory-server`) — never touches the production Atlas cluster
+
+Organized around this API's own 4 layers (Interface → Application → Domain → Infrastructure):
+
+| Layer | Covers | Test files |
+| ----- | ------ | ---------- |
+| 1. Interface — routes, app-level middleware | CORS allowlist, rate-limiting, JSON/file body-size limits, upload temp-file location | `hardening`, `bodySizeLimit`, `uploadFileSizeLimit`, `uploadTempDir` |
+| 2. Application — controllers (orchestration) | Seed/backup guards, password-field exposure, product ownership enforcement, order buyer/seller/admin access, config API proxying (XSS-safe JSON), image-upload error handling, contact-form log sanitization | `seedGuard`, `passwordLeak`, `productOwnership`, `orderControllers`, `configXss`, `uploadErrorRejection`, `logInjection` |
+| 3. Domain — framework-independent business rules | Order/product ownership rules (`domain/authorization.js`) — plain functions, no Express/Mongoose, no DB needed to test | `authorization` |
+| 4. Infrastructure — persistence (models) + auth (JWT) | Unique email constraint + role defaults, required-field validation; JWT fail-fast when `JWT_SECRET_A` is missing instead of a public hardcoded fallback | `models`, `jwtSecret` |
+
 ## How to run this project
 
 1. `npm ci`
