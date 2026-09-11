@@ -49,10 +49,9 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | 02c  | Migrate to [Render][render] (free tier)                                       | Doing    |
 | 03   | MongoDB Atlas cluster resumed after long inactivity pause                     | Done     |
 | 04   | `engines.node` updated `12.x` → `24.x` (Node 12 unsupported on modern hosts)  | Done     |
-| 05   | Fix error-handling middleware missing its 4th `next` param (never invoked)     | **Todo** |
-| 06   | Fix response status codes clobbered by `writeHead()` before `.status()`       | **Todo** |
-| 07   | Automated tests                                                                | **Todo** |
-| 08   | CI (GitHub Actions)                                                            | **Todo** |
+| 05   | Fix `ERR_HTTP_HEADERS_SENT` crash loop: dead `frontend/build` static mount, missing `next` param on error handler, `writeHead()` clobbering `.status()` | Done |
+| 06   | Automated tests                                                                | **Todo** |
+| 07   | CI (GitHub Actions)                                                            | **Todo** |
 
 ## How to run this project
 
