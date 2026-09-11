@@ -1,3 +1,4 @@
+import path from "path";
 import express from "express";
 import multer from "multer";
 import uploadControllers from "../controllers/uploadControllers.js";
@@ -5,18 +6,7 @@ import { checkToken } from "../auth/token.js";
 
 const uploadRoute = express.Router();
 
-// const storage = multer.diskStorage({
-//   destination(req, file, cb) {
-//     cb(null, "-tmp/multi/uploads/");
-//   },
-//   filename(req, file, cb) {
-//     cb(null, `${Date.now()}.jpg`);
-//   },
-// });
-
-// const upload = multer({ storage });
-
-const upload = multer({ dest: "/tmp/uploads/" });
+const upload = multer({ dest: path.join(path.resolve(), "tmp", "uploads") });
 
 uploadRoute.post(
   "/",
