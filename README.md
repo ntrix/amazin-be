@@ -63,17 +63,18 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 
 Unit tests run on every push/PR via GitHub Actions, with coverage reported to Codecov and code smells to SonarQube Cloud (badges at the top of this page).
 
-- 12 test files, 31 tests
+- 13 test files, 33 tests
 - ~53% line coverage
 - Real, ephemeral MongoDB per test file (`mongodb-memory-server`) — never touches the production Atlas cluster
 
-Organized around this API's own layers (routes/middleware → controllers → cross-cutting auth):
+Organized around this API's own 4 layers (routes/middleware → controllers → models → cross-cutting auth):
 
 | Layer | Covers | Test files |
 | ----- | ------ | ---------- |
 | 1. Presentation — routes, app-level middleware | CORS allowlist, rate-limiting, JSON/file body-size limits, upload temp-file location | `hardening`, `bodySizeLimit`, `uploadFileSizeLimit`, `uploadTempDir` |
 | 2. Application — controllers (business logic) | Seed/backup guards, password-field exposure, product ownership, order buyer/seller/admin access, config API proxying (XSS-safe JSON), image-upload error handling, contact-form log sanitization | `seedGuard`, `passwordLeak`, `productOwnership`, `orderControllers`, `configXss`, `uploadErrorRejection`, `logInjection` |
-| Cross-cutting — auth (JWT sign/verify, role guards) | Fail-fast when `JWT_SECRET_A` is missing, instead of a public hardcoded fallback | `jwtSecret` |
+| 3. Domain — Mongoose models (schema rules) | Unique email constraint + role defaults, required-field validation | `models` |
+| 4. Cross-cutting — auth (JWT sign/verify, role guards) | Fail-fast when `JWT_SECRET_A` is missing, instead of a public hardcoded fallback | `jwtSecret` |
 
 ## How to run this project
 
