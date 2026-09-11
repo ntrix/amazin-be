@@ -2,6 +2,7 @@ import { movies } from "../seed.data.js";
 import Order from "../models/orderModel.js";
 import Product from "../models/productModel.js";
 import User from "../models/userModel.js";
+import { isProductOwnerOrAdmin } from "../domain/authorization.js";
 
 const productControllers = {
   async adminBackup(req, res) {
@@ -160,7 +161,7 @@ const productControllers = {
     const productId = req.params.id;
     const product = await Product.findById(productId);
     if (product) {
-      if (!req.user.isAdmin && product.seller.toString() !== req.user._id) {
+      if (!isProductOwnerOrAdmin(product, req.user)) {
         return res
           .status(403)
           .send({ message: "Not authorized to edit this product" });

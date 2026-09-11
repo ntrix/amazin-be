@@ -1,4 +1,5 @@
 import Order from "../models/orderModel.js";
+import { isOrderOwnerOrAdmin, isOrderSellerOrAdmin } from "../domain/authorization.js";
 
 const NOT_FOUND = "Order Not Found";
 const UNAUTHORIZED = "Unauthorized zone";
@@ -45,10 +46,7 @@ const orderControllers = {
 
     if (!order) return res.status(404).send({ message: NOT_FOUND });
 
-    if (
-      ![String(order.user), String(order.seller)].includes(req.user._id) &&
-      !req.user.isAdmin
-    )
+    if (!isOrderOwnerOrAdmin(order, req.user))
       return res.status(401).send({ message: UNAUTHORIZED });
 
     return res.send(order);
@@ -59,10 +57,7 @@ const orderControllers = {
 
     if (!order) return res.status(404).send({ message: NOT_FOUND });
 
-    if (
-      ![String(order.user), String(order.seller)].includes(req.user._id) &&
-      !req.user.isAdmin
-    )
+    if (!isOrderOwnerOrAdmin(order, req.user))
       return res.status(401).send({ message: UNAUTHORIZED });
 
     order.isPaid = true;
@@ -91,7 +86,7 @@ const orderControllers = {
 
     if (!order) return res.status(404).send({ message: NOT_FOUND });
 
-    if (String(order.seller) !== req.user._id && !req.user.isAdmin)
+    if (!isOrderSellerOrAdmin(order, req.user))
       return res.status(401).send({ message: UNAUTHORIZED });
 
     order.isDelivered = true;
