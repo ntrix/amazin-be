@@ -45,7 +45,7 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | ---- | ----------------------------------------------------------------------------- | -------- |
 | 01   | Initial API: users, products, orders, auth                                    | Done     |
 | 02a  | Deploy on Heroku                                                               | Done     |
-| 02b  | Migrate to Cyclic.sh (serverless)                                              | Done, then **service shut down (2024)** |
+| 02b  | Migrate to Cyclic.sh (serverless), later shut down (2024)                     | Done     |
 | 02c  | Migrate to [Render][render] (free tier)                                       | Done     |
 | 03   | MongoDB Atlas cluster resumed after long inactivity pause                     | Done     |
 | 04   | `engines.node` updated `12.x` → `24.x` (Node 12 unsupported on modern hosts)  | Done     |
