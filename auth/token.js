@@ -9,7 +9,7 @@ export const generateToken = (user) => {
       isAdmin: user.isAdmin,
       isSeller: user.isSeller,
     },
-    process.env.JWT_SECRET || "secretString",
+    process.env.JWT_SECRET_A || "secretString",
     {
       expiresIn: "30d",
     }
@@ -22,7 +22,7 @@ export const checkToken = (req, res, next) => {
     const token = authorization.slice(7, authorization.length); // Bearer XXXXXX
     jwt.verify(
       token,
-      process.env.JWT_SECRET || "secretString",
+      process.env.JWT_SECRET_A || "secretString",
       (err, decode) => {
         if (err) {
           res.status(401).send({ message: "Invalid Token" });
