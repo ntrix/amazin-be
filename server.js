@@ -36,23 +36,11 @@ app.use("/api/config", configRoute);
 const __dirname = path.resolve();
 
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
-app.use(express.static(path.join(__dirname, "/frontend/build")));
-app.get("*", (req, res) =>
-  res
-    .writeHead(201, {
-      "Content-Type": "application/javascript",
-    })
-    .status(404)
-    .send({ message: "Page not found" })
-);
+app.get("*", (req, res) => res.status(404).send({ message: "Page not found" }));
 
-app.use((err, req, res) => {
-  res
-    .writeHead(201, {
-      "Content-Type": "application/javascript",
-    })
-    .status(500)
-    .send({ message: err.message });
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  res.status(500).send({ message: err.message });
 });
 
 const port = process.env.PORT || 5000;
