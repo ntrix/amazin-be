@@ -147,7 +147,7 @@ const userControllers = {
   },
 
   async getUser(req, res) {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).select("-password");
     if (user) {
       res.send(user);
     } else {
@@ -205,7 +205,7 @@ const userControllers = {
   },
 
   async getAllUsers(req, res) {
-    const users = await User.find({});
+    const users = await User.find({}).select("-password");
     res.send(users);
   },
 
