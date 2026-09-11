@@ -6,7 +6,10 @@ import { checkToken } from "../auth/token.js";
 
 const uploadRoute = express.Router();
 
-const upload = multer({ dest: path.join(path.resolve(), "tmp", "uploads") });
+const upload = multer({
+  dest: path.join(path.resolve(), "tmp", "uploads"),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 uploadRoute.post(
   "/",

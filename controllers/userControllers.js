@@ -7,6 +7,8 @@ import { data } from "../seed.data.js";
 
 const NOT_FOUND = "User Not Found";
 
+const sanitizeForLog = (value) => String(value ?? "").replace(/[\r\n]/g, " ");
+
 const userControllers = {
   postContact(req, res) {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -23,8 +25,10 @@ const userControllers = {
       });
       res.status(200).send("ok");
       console.log(
-        `contact from name:${name} email:${email} phone:${phone} `,
-        text
+        `contact from name:${sanitizeForLog(name)} email:${sanitizeForLog(
+          email
+        )} phone:${sanitizeForLog(phone)} `,
+        sanitizeForLog(text)
       );
     } catch (err) {
       res.status(500).send(err);

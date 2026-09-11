@@ -11,10 +11,10 @@ const systemTempDir = "/tmp/uploads";
 
 beforeAll(startTestDb);
 afterAll(stopTestDb);
-afterEach(async () => {
-  await clearTestDb();
-  await fs.promises.rm(projectTempDir, { recursive: true, force: true });
-});
+// NOTE: don't rm() projectTempDir here - other test files upload
+// concurrently into the same real, shared directory; deleting it mid-run
+// races with their in-flight uploads. It's gitignored and harmless to leave.
+afterEach(clearTestDb);
 
 describe("upload temp files land in the project-local dir, not the shared OS /tmp", () => {
   it("writes to tmp/uploads under the project, and never to /tmp/uploads", async () => {

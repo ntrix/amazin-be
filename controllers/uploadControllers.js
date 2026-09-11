@@ -29,8 +29,11 @@ const uploadControllers = {
               image.path,
               { folder: `amazin/${productId}` },
               (error, data) => {
-                if (error) reject(error);
-                else resolve(data.public_id.split("/").pop()); // appName/sellerID/productId/imgName only need to save the imgName to DB
+                if (error) {
+                  reject(error instanceof Error ? error : new Error(String(error)));
+                } else {
+                  resolve(data.public_id.split("/").pop()); // appName/sellerID/productId/imgName only need to save the imgName to DB
+                }
               }
             )
           )
