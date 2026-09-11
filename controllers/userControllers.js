@@ -33,13 +33,16 @@ const userControllers = {
 
   async getTopSellers(req, res) {
     const topSellers = await User.find({ isSeller: true })
+      .select("-password")
       .sort({ "seller.rating": -1 })
       .limit(5);
     res.send(topSellers);
   },
 
   async seed(req, res) {
-    // await User.remove({});
+    if ((await User.countDocuments()) > 0) {
+      return res.status(403).send({ message: "Already seeded" });
+    }
     const createdUsers = await User.insertMany(data.users);
     res.send({ createdUsers });
   },
@@ -145,7 +148,7 @@ const userControllers = {
   },
 
   async getUser(req, res) {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).select("-password");
     if (user) {
       res.send(user);
     } else {
@@ -203,7 +206,7 @@ const userControllers = {
   },
 
   async getAllUsers(req, res) {
-    const users = await User.find({});
+    const users = await User.find({}).select("-password");
     res.send(users);
   },
 

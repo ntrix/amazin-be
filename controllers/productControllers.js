@@ -109,7 +109,9 @@ const productControllers = {
   },
 
   async seedDB(req, res) {
-    // await Product.remove({});
+    if ((await Product.countDocuments()) > 0) {
+      return res.status(403).send({ message: "Already seeded" });
+    }
     const seller = await User.findOne({ isSeller: true });
     if (seller) {
       const products = movies.products.map((product) => ({
@@ -158,6 +160,11 @@ const productControllers = {
     const productId = req.params.id;
     const product = await Product.findById(productId);
     if (product) {
+      if (!req.user.isAdmin && product.seller.toString() !== req.user._id) {
+        return res
+          .status(403)
+          .send({ message: "Not authorized to edit this product" });
+      }
       product.name = req.body.name;
       product.price = req.body.price;
       product.deal = req.body.deal;

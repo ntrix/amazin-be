@@ -1,16 +1,15 @@
+import "dotenv/config";
 import express from "express";
 import helmet from "helmet";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import path from "path";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import productRoute from "./routes/productRoute.js";
 import userRoute from "./routes/userRoute.js";
 import orderRoute from "./routes/orderRoute.js";
 import uploadRoute from "./routes/uploadRoute.js";
 import configRoute from "./routes/configRoute.js";
-
-dotenv.config();
 
 const app = express();
 app.use(
@@ -18,7 +17,15 @@ app.use(
     referrerPolicy: { policy: "no-referrer-when-downgrade" },
   })
 );
-app.use(cors());
+
+const allowedOrigins = (
+  process.env.CORS_ORIGINS || "http://localhost:3000"
+).split(",");
+allowedOrigins.push("https://amazin.vercel.app");
+app.use(cors({ origin: allowedOrigins }));
+
+app.use("/api", rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -40,7 +47,8 @@ app.get("*", (req, res) => res.status(404).send({ message: "Page not found" }));
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
-  res.status(500).send({ message: err.message });
+  console.error(err);
+  res.status(500).send({ message: "Internal server error" });
 });
 
 const port = process.env.PORT || 5000;
