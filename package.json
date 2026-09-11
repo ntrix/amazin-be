@@ -39,7 +39,7 @@
     "nodemon": "^2.0.22"
   },
   "engines": {
-    "node": "12.20.0"
+    "node": "24.x"
   },
   "bugs": {
     "url": "https://github.com/ntrix/amazin/issues"
