@@ -57,6 +57,7 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | 05   | Fix `ERR_HTTP_HEADERS_SENT` crash loop: dead `frontend/build` static mount, missing `next` param on error handler, `writeHead()` clobbering `.status()` | Done |
 | 06   | Automated tests: Vitest + Supertest + mongodb-memory-server                   | Done     |
 | 07   | CI (GitHub Actions) + [Codecov][codecov] + [SonarQube Cloud][sonar]           | Done     |
+| 08   | Repo switched from private to public (09/2026)                                | Done     |
 
 ## How to run this project
 
