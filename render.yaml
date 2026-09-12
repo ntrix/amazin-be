@@ -1,0 +1,30 @@
+services:
+  - name: amazin-be
+    type: web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: MONGODB_URL
+        sync: false
+      - key: JWT_SECRET_A
+        sync: false
+      - key: CD_API_KEY
+        sync: false
+      - key: CD_API_SECRET
+        sync: false
+      - key: CD_NAME
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: RATES_API_KEY
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: FROMMAIL
+        sync: false
+      - key: TOMAIL
+        sync: false
+      - key: NODE_ENV
+        sync: false
