@@ -73,10 +73,6 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 
 ```mermaid
 flowchart TB
-  Render ~~~ Role
-  Role ~~~ VPC
-  VPC ~~~ Internet
-
   Role["IAM Execution Role"] -. "task assumes" .-> Task
   Role -. "pulls image" .-> ECR[("ECR")]
   Role -. "writes logs" .-> Logs[("CloudWatch Logs")]
@@ -106,10 +102,6 @@ Same core (ALB → Target Group → Fargate Task → MongoDB Atlas, ECS Service,
 
 ```mermaid
 flowchart TB
-  Render ~~~ Role
-  Role ~~~ VPC
-  VPC ~~~ Internet
-
   GitHub["GitHub: push to main"] --> Actions["GitHub Actions<br/>OIDC role"]
   Actions -->|"push image"| ECR[("ECR")]
   Actions -->|"register + deploy"| Service
