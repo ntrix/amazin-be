@@ -69,7 +69,7 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 
 ## Architecture
 
-### ECS Fargate, right after first going live (steps 1-11)
+### ECS Fargate, right after first going live (plan)
 
 ```mermaid
 flowchart LR
@@ -93,7 +93,7 @@ flowchart LR
   end
 ```
 
-### Full picture, after custom domain, monitoring, and CI/CD (steps 12-14)
+### Full picture, after custom domain, monitoring, and CI/CD (actual result)
 
 ```mermaid
 flowchart TB
