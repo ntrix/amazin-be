@@ -150,8 +150,21 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 ## How to run this project
 
 1. `npm ci`
-2. Create a `.env` file with: `MONGODB_URL`, `JWT_SECRET_A`, `CD_API_KEY`, `CD_API_SECRET`, `CD_NAME`, `GOOGLE_API_KEY`, `PAYPAL_CLIENT_ID`, `RATES_API_KEY`, `SENDGRID_API_KEY`, `FROMMAIL`, `TOMAIL`, `NODE_ENV`
+2. Create a `.env` file with the variables below
 3. `npm start` (or `npm run devstart` for auto-reload during development)
+
+| Variable | What it's for | Where to get it |
+| -------- | -------------- | ---------------- |
+| `MONGODB_URL` | Database connection string | [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) — free M0 cluster, add a database user, then **Connect → Drivers** and copy the URI (fill in the password yourself) |
+| `JWT_SECRET_A` | Signs/verifies auth tokens | Not a service — any random string you generate yourself, e.g. `openssl rand -hex 32` |
+| `CD_NAME`, `CD_API_KEY`, `CD_API_SECRET` | Image hosting | [Cloudinary](https://cloudinary.com/) free account — all three values are shown on the Dashboard home page |
+| `GOOGLE_API_KEY` | Google Maps (shipping address picker) | [Google Cloud Console](https://console.cloud.google.com/) → enable **Maps JavaScript API** → **APIs & Services → Credentials** → create an API key (needs a billing account on file, but this app's usage stays inside Google's free monthly credit) |
+| `PAYPAL_CLIENT_ID` | Checkout payment button | [PayPal Developer](https://developer.paypal.com/) → **My Apps & Credentials** → create a Sandbox app and copy its Client ID; leave unset and it falls back to PayPal's public sandbox id (`sb`) |
+| `RATES_API_KEY` | Live currency conversion rates | [exchangeratesapi.io](https://exchangeratesapi.io/) free plan — key is shown right after signup |
+| `SENDGRID_API_KEY` | Sends contact-form emails | [SendGrid](https://sendgrid.com/) free account → **Settings → API Keys → Create API Key** |
+| `FROMMAIL` | Sender address for those emails | Must be a **verified sender** in SendGrid (**Settings → Sender Authentication**) — an unverified address will fail to send |
+| `TOMAIL` | Inbox that receives contact-form submissions | Any email address you own — no verification needed |
+| `NODE_ENV` | `development` or `production` | Set by you, not from a service |
 
 ### Or with Docker
 
