@@ -73,19 +73,20 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 
 ```mermaid
 flowchart TB
-  Internet([Internet]) -->|"HTTP :80"| ALB["ALB"]
-  ALB -->|forwards| TG["Target Group"]
-  TG -->|"routes by IP"| Task["Fargate Task"]
-  Task -->|queries| Mongo[("MongoDB Atlas")]
-  Service["ECS Service"] -->|"launches, restarts"| Task
-  Service -->|registers| TG
-
   Role["IAM Execution Role"] -. "task assumes" .-> Task
   Role -. "pulls image" .-> ECR[("ECR")]
   Role -. "writes logs" .-> Logs[("CloudWatch Logs")]
   Role -. "reads secrets" .-> SSM[("SSM + KMS")]
 
   Render[["Render<br/>passive failover, independent"]]
+
+  Service["ECS Service"] -->|"launches, restarts"| Task
+  Service -->|registers| TG
+
+  Internet([Internet]) -->|"HTTP :80"| ALB["ALB"]
+  ALB -->|forwards| TG["Target Group"]
+  TG -->|"routes by IP"| Task["Fargate Task"]
+  Task -->|queries| Mongo[("MongoDB Atlas")]
 
   subgraph VPC["VPC · eu-central-1"]
     ALB
@@ -105,6 +106,16 @@ flowchart TB
   Actions -->|"push image"| ECR[("ECR")]
   Actions -->|"register + deploy"| Service
 
+  Role["IAM Execution Role"] -. "task assumes" .-> Task
+  Role -. "pulls image" .-> ECR
+  Role -. "writes logs" .-> Logs[("CloudWatch Logs")]
+  Role -. "reads secrets" .-> SSM[("SSM + KMS")]
+
+  Render[["Render<br/>passive failover, independent"]]
+
+  Service["ECS Service"] -->|"launches, restarts"| Task
+  Service -->|registers| TG
+
   DNS["Namecheap DNS<br/>api.tiennguyen.de"] -. CNAME .-> ALB
   ACM["ACM Certificate<br/>*.tiennguyen.de"] -. "TLS cert" .-> ALB
 
@@ -112,19 +123,10 @@ flowchart TB
   ALB -->|forwards| TG["Target Group"]
   TG -->|"routes by IP"| Task["Fargate Task"]
   Task -->|queries| Mongo[("MongoDB Atlas")]
-  Service["ECS Service"] -->|"launches, restarts"| Task
-  Service -->|registers| TG
-
-  Role["IAM Execution Role"] -. "task assumes" .-> Task
-  Role -. "pulls image" .-> ECR
-  Role -. "writes logs" .-> Logs[("CloudWatch Logs")]
-  Role -. "reads secrets" .-> SSM[("SSM + KMS")]
 
   TG -. watches .-> Alarms["CloudWatch Alarms"]
   Alarms --> SNS["SNS Topic"]
   SNS --> Email([Email])
-
-  Render[["Render<br/>passive failover, independent"]]
 
   subgraph VPC["VPC · eu-central-1"]
     ALB
