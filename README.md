@@ -72,17 +72,19 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 ### ECS Fargate, right after first going live (plan)
 
 ```mermaid
-flowchart LR
-  Internet([Internet]) -->|"HTTP :80"| ALB["ALB<br/>alb-sg"]
-  ALB -->|forwards| TG["Target Group<br/>amazin-be-tg"]
-  TG -->|"routes by IP"| Task["Fargate Task<br/>task-sg"]
-  Task -->|queries| Mongo[("MongoDB Atlas<br/>external")]
+flowchart TB
+  Internet([Internet]) -->|"HTTP :80"| ALB["ALB"]
+  ALB -->|forwards| TG["Target Group"]
+  TG -->|"routes by IP"| Task["Fargate Task"]
+  Task -->|queries| Mongo[("MongoDB Atlas")]
   Service["ECS Service"] -->|"launches, restarts"| Task
   Service -->|registers| TG
-  Role["IAM Execution Role"] -. "assumed at launch" .-> Task
+
+  Role["IAM Execution Role"] -. "task assumes" .-> Task
   Role -. "pulls image" .-> ECR[("ECR")]
   Role -. "writes logs" .-> Logs[("CloudWatch Logs")]
   Role -. "reads secrets" .-> SSM[("SSM + KMS")]
+
   Render[["Render<br/>passive failover, independent"]]
 
   subgraph VPC["VPC · eu-central-1"]
@@ -95,38 +97,40 @@ flowchart LR
 
 ### Full picture, after custom domain, monitoring, and CI/CD (actual result)
 
+Same core (ALB → Target Group → Fargate Task → MongoDB Atlas, ECS Service, IAM Execution Role) as the plan above, plus three additions: CI/CD at the top, the custom domain feeding into the ALB, and monitoring branching off the Target Group.
+
 ```mermaid
 flowchart TB
   GitHub["GitHub: push to main"] --> Actions["GitHub Actions<br/>OIDC role"]
-  Actions -->|"push image"| ECR2[("ECR")]
-  Actions -->|"register + deploy"| Service2
+  Actions -->|"push image"| ECR[("ECR")]
+  Actions -->|"register + deploy"| Service
 
-  DNS["Namecheap DNS<br/>api.tiennguyen.de"] -. CNAME .-> ALB2
-  ACM["ACM Certificate<br/>*.tiennguyen.de"] -. "TLS cert" .-> ALB2
+  DNS["Namecheap DNS<br/>api.tiennguyen.de"] -. CNAME .-> ALB
+  ACM["ACM Certificate<br/>*.tiennguyen.de"] -. "TLS cert" .-> ALB
 
-  Internet2([Internet]) -->|"HTTPS :443"| ALB2["ALB"]
-  ALB2 -->|forwards| TG2["Target Group"]
-  TG2 -->|"routes by IP"| Task2["Fargate Task"]
-  Task2 -->|queries| Mongo2[("MongoDB Atlas")]
-  Service2["ECS Service"] -->|"launches, restarts"| Task2
-  Service2 -->|registers| TG2
+  Internet([Internet]) -->|"HTTPS :443"| ALB["ALB"]
+  ALB -->|forwards| TG["Target Group"]
+  TG -->|"routes by IP"| Task["Fargate Task"]
+  Task -->|queries| Mongo[("MongoDB Atlas")]
+  Service["ECS Service"] -->|"launches, restarts"| Task
+  Service -->|registers| TG
 
-  Role2["IAM Execution Role"] -. "task assumes" .-> Task2
-  Role2 -. "pulls image" .-> ECR2
-  Role2 -. "writes logs" .-> Logs2[("CloudWatch Logs")]
-  Role2 -. "reads secrets" .-> SSM2[("SSM + KMS")]
+  Role["IAM Execution Role"] -. "task assumes" .-> Task
+  Role -. "pulls image" .-> ECR
+  Role -. "writes logs" .-> Logs[("CloudWatch Logs")]
+  Role -. "reads secrets" .-> SSM[("SSM + KMS")]
 
-  TG2 -. watches .-> Alarms["CloudWatch Alarms"]
+  TG -. watches .-> Alarms["CloudWatch Alarms"]
   Alarms --> SNS["SNS Topic"]
   SNS --> Email([Email])
 
-  Render2[["Render<br/>unchanged, passive failover"]]
+  Render[["Render<br/>passive failover, independent"]]
 
-  subgraph VPC2["VPC · eu-central-1"]
-    ALB2
-    TG2
-    Task2
-    Service2
+  subgraph VPC["VPC · eu-central-1"]
+    ALB
+    TG
+    Task
+    Service
   end
 ```
 
