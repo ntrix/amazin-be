@@ -63,7 +63,72 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | 09b  | Render switched to run the same Docker image via Blueprint (`render.yaml`), replacing the native Node build | Done |
 | 10a  | AWS Migration — new AWS account set up from scratch: IAM user with MFA (no root for daily use), AWS Budgets configured before any billable resource | Done |
 | 10b  | AWS Migration — migrated to AWS ECS Fargate + Application Load Balancer (image in ECR, secrets in SSM Parameter Store, dedicated IAM execution role) — Render kept running as a live failover throughout | Done |
-| 10c  | AWS Migration — HTTPS on the AWS endpoint via a free ACM certificate and a custom subdomain (`api.tiennguyen.de`) | Doing |
+| 10c  | AWS Migration — HTTPS on the AWS endpoint via a free ACM certificate and a custom subdomain (`api.tiennguyen.de`) | Done |
+| 10d  | AWS Migration — CloudWatch Alarms (unhealthy target, 5xx errors) → SNS email, so downtime pages instead of waiting to be noticed | Done |
+| 10e  | AWS Migration — GitHub Actions CI/CD (build → ECR → ECS deploy) authenticating via OIDC, no AWS keys stored in GitHub | Done |
+
+## Architecture
+
+### ECS Fargate, right after first going live (plan)
+
+```mermaid
+flowchart LR
+  Internet([Internet]) -->|"HTTP :80"| ALB["ALB<br/>alb-sg"]
+  ALB -->|forwards| TG["Target Group<br/>amazin-be-tg"]
+  TG -->|"routes by IP"| Task["Fargate Task<br/>task-sg"]
+  Task -->|queries| Mongo[("MongoDB Atlas<br/>external")]
+  Service["ECS Service"] -->|"launches, restarts"| Task
+  Service -->|registers| TG
+  Role["IAM Execution Role"] -. "assumed at launch" .-> Task
+  Role -. "pulls image" .-> ECR[("ECR")]
+  Role -. "writes logs" .-> Logs[("CloudWatch Logs")]
+  Role -. "reads secrets" .-> SSM[("SSM + KMS")]
+  Render[["Render<br/>passive failover, independent"]]
+
+  subgraph VPC["VPC · eu-central-1"]
+    ALB
+    TG
+    Task
+    Service
+  end
+```
+
+### Full picture, after custom domain, monitoring, and CI/CD (actual result)
+
+```mermaid
+flowchart TB
+  GitHub["GitHub: push to main"] --> Actions["GitHub Actions<br/>OIDC role"]
+  Actions -->|"push image"| ECR2[("ECR")]
+  Actions -->|"register + deploy"| Service2
+
+  DNS["Namecheap DNS<br/>api.tiennguyen.de"] -. CNAME .-> ALB2
+  ACM["ACM Certificate<br/>*.tiennguyen.de"] -. "TLS cert" .-> ALB2
+
+  Internet2([Internet]) -->|"HTTPS :443"| ALB2["ALB"]
+  ALB2 -->|forwards| TG2["Target Group"]
+  TG2 -->|"routes by IP"| Task2["Fargate Task"]
+  Task2 -->|queries| Mongo2[("MongoDB Atlas")]
+  Service2["ECS Service"] -->|"launches, restarts"| Task2
+  Service2 -->|registers| TG2
+
+  Role2["IAM Execution Role"] -. "task assumes" .-> Task2
+  Role2 -. "pulls image" .-> ECR2
+  Role2 -. "writes logs" .-> Logs2[("CloudWatch Logs")]
+  Role2 -. "reads secrets" .-> SSM2[("SSM + KMS")]
+
+  TG2 -. watches .-> Alarms["CloudWatch Alarms"]
+  Alarms --> SNS["SNS Topic"]
+  SNS --> Email([Email])
+
+  Render2[["Render<br/>unchanged, passive failover"]]
+
+  subgraph VPC2["VPC · eu-central-1"]
+    ALB2
+    TG2
+    Task2
+    Service2
+  end
+```
 
 ## Test Coverage
 
