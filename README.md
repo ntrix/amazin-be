@@ -34,7 +34,8 @@ This is the REST API powering [Amazin' Amazim Store][fenx] — a long-term perso
 - [Cloudinary](https://cloudinary.com/) (image hosting)
 - [SendGrid](https://sendgrid.com/) (contact form email)
 - `jsonwebtoken` + `bcryptjs` (auth)
-- Deployed on [Render](https://render.com/) — previously Heroku, then Cyclic.sh (both since discontinued/shut down)
+- [Docker](https://www.docker.com/) (multi-stage build, non-root user) — same image runs locally, on Render, and on AWS
+- Deployed on [Render](https://render.com/) (passive failover) and [AWS ECS Fargate](https://aws.amazon.com/fargate/) behind an Application Load Balancer — previously Heroku, then Cyclic.sh (both since discontinued/shut down)
 
 ## Source code
 
@@ -58,6 +59,11 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | 06   | Automated tests: Vitest + Supertest + mongodb-memory-server                   | Done     |
 | 07   | CI (GitHub Actions) + [Codecov][codecov] + [SonarQube Cloud][sonar]           | Done     |
 | 08   | Repo switched from private to public (09/2026)                                | Done     |
+| 09   | Containerized with Docker (multi-stage build on `node:24-alpine`, non-root user, HTTP healthcheck) | Done |
+| 10   | Render switched to run the same Docker image via Blueprint (`render.yaml`), replacing the native Node build | Done |
+| 11   | New AWS account set up from scratch: IAM user with MFA (no root for daily use), AWS Budgets configured before any billable resource | Done |
+| 12   | Migrated to AWS ECS Fargate + Application Load Balancer (image in ECR, secrets in SSM Parameter Store, dedicated IAM execution role) — Render kept running as a live failover throughout | Done |
+| 13   | HTTPS on the AWS endpoint via a free ACM certificate and a custom subdomain (`api.tiennguyen.de`) | In progress |
 
 ## Test Coverage
 
@@ -81,6 +87,13 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 1. `npm ci`
 2. Create a `.env` file with: `MONGODB_URL`, `JWT_SECRET_A`, `CD_API_KEY`, `CD_API_SECRET`, `CD_NAME`, `GOOGLE_API_KEY`, `PAYPAL_CLIENT_ID`, `RATES_API_KEY`, `SENDGRID_API_KEY`, `FROMMAIL`, `TOMAIL`, `NODE_ENV`
 3. `npm start` (or `npm run devstart` for auto-reload during development)
+
+### Or with Docker
+
+```
+docker build -t amazin-be:local .
+docker run -d --name amazin-be -p 5050:5000 --env-file .env amazin-be:local
+```
 
 [node]: https://nodejs.org/
 [express]: https://expressjs.com/
