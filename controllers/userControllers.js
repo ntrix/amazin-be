@@ -114,7 +114,7 @@ const userControllers = {
         );
       }, 15 * 60 * 1000);
       user.failLoginCount = waitingSingleton + 5; //save timeoutId instead the counter, +5 for surely have more than 4 fail attempts
-      res.status(403).send({
+      res.status(429).send({
         message:
           "Too many fail attempts! Please try again in 15 minutes or reset your password.",
       });
