@@ -41,8 +41,8 @@ async function createSellerAndProduct() {
   return { seller, product };
 }
 
-describe("upload failure always rejects with a real Error", () => {
-  it("wraps a non-Error rejection reason (a plain string) into a real Error", async () => {
+describe("upload failure never crashes the process and never leaks internals to the client", () => {
+  it("responds 500 with a generic message for a non-Error rejection reason (a plain string)", async () => {
     mockUpload.mockImplementation((filePath, opts, cb) =>
       cb("plain string failure, not an Error")
     );
@@ -54,14 +54,16 @@ describe("upload failure always rejects with a real Error", () => {
       .field("productId", product._id.toString())
       .attach("images", Buffer.from("fake image"), "test.jpg");
 
-    expect(res.status).toBe(503);
-    // "here" + error - only contains "Error:" if the rejection reason was
-    // actually wrapped into a real Error instance (Error#toString())
-    expect(res.body.message).toContain("Error:");
-    expect(res.body.message).toContain("plain string failure, not an Error");
+    // on the old code this was 503 and echoed "here" + the raw rejection
+    // reason straight into the response body; the internal error class
+    // hierarchy now routes anything unexpected to the generic 500 handler,
+    // which never leaks internals to the client (detail still reaches the
+    // server logs via req.log.error, see app.js)
+    expect(res.status).toBe(500);
+    expect(res.body.message).toBe("Internal server error");
   });
 
-  it("preserves the message when the SDK already rejects with a real Error", async () => {
+  it("responds 500 with a generic message when the SDK already rejects with a real Error", async () => {
     mockUpload.mockImplementation((filePath, opts, cb) =>
       cb(new Error("cloudinary quota exceeded"))
     );
@@ -73,8 +75,7 @@ describe("upload failure always rejects with a real Error", () => {
       .field("productId", product._id.toString())
       .attach("images", Buffer.from("fake image"), "test.jpg");
 
-    expect(res.status).toBe(503);
-    expect(res.body.message).toContain("Error:");
-    expect(res.body.message).toContain("cloudinary quota exceeded");
+    expect(res.status).toBe(500);
+    expect(res.body.message).toBe("Internal server error");
   });
 });

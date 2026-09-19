@@ -1,6 +1,7 @@
 import path from "path";
 import express from "express";
 import multer from "multer";
+import asyncHandler from "express-async-handler";
 import uploadControllers from "../controllers/uploadControllers.js";
 import { checkToken } from "../auth/token.js";
 
@@ -15,14 +16,14 @@ uploadRoute.post(
   "/",
   checkToken,
   upload.array("images", 8),
-  uploadControllers.uploadImages
+  asyncHandler(uploadControllers.uploadImages)
 );
 
 uploadRoute.patch(
   "/",
   checkToken,
   upload.none(),
-  uploadControllers.updateImages
+  asyncHandler(uploadControllers.updateImages)
 );
 
 export default uploadRoute;

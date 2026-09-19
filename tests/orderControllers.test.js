@@ -64,7 +64,7 @@ describe("orderControllers", () => {
       .set("Authorization", `Bearer ${signTestToken(buyer)}`)
       .send(orderPayload({ orderItems: [] }));
 
-    expect(res.status).toBe(411);
+    expect(res.status).toBe(400);
   });
 
   it("GET /api/orders/mine only returns the caller's own orders", async () => {
@@ -122,7 +122,7 @@ describe("orderControllers", () => {
       .get(`/api/orders/${order._id}`)
       .set("Authorization", `Bearer ${signTestToken(stranger)}`);
 
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it("GET /api/orders/:id lets an admin view any order", async () => {

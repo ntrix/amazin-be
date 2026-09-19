@@ -24,7 +24,7 @@ describe("seed endpoints only run against an empty collection", () => {
     });
 
     const res = await request(app).get("/api/users/seed");
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(409);
     expect(res.body.message).toBe("Already seeded");
   });
 
@@ -44,7 +44,7 @@ describe("seed endpoints only run against an empty collection", () => {
     });
 
     const res = await request(app).get("/api/products/admin-seed-my-db");
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(409);
     expect(res.body.message).toBe("Already seeded");
   });
 });

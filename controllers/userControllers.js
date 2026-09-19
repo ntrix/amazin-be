@@ -39,7 +39,7 @@ const userControllers = {
 
   async seed(req, res) {
     if ((await User.countDocuments()) > 0) {
-      return res.status(403).send({ message: "Already seeded" });
+      return res.status(409).send({ message: "Already seeded" });
     }
     const createdUsers = await User.insertMany(data.users);
     res.send({ createdUsers });
@@ -49,20 +49,24 @@ const userControllers = {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res
-        .status(401)
+        .status(400)
         .json({ message: errors.array().map(({ msg }) => msg) });
     }
     const user = await User.findOne({ email: req.body.email });
     if (!user)
       return res
-        .status(404)
+        .status(401)
         .send({ message: "Invalid username or email or password" });
 
     let count = (user.failLoginCount || 0) + 1;
 
     if (bcrypt.compareSync(req.body.password, user.password)) {
       user.failLoginCount = 0; //reset fail attempts count by success login
-      user.save((err) => (err ? res.status(402).send({ message: err }) : 0));
+      user.save((err) =>
+        err
+          ? res.status(500).send({ message: "Failed to update login state" })
+          : 0
+      );
       return res.send({
         _id: user._id,
         name: user.name,
@@ -103,10 +107,14 @@ const userControllers = {
       clearTimeout(user.failLoginCount - 5); //-5 to get back the right timeoutId
       const waitingSingleton = setTimeout(() => {
         user.failLoginCount = 3;
-        user.save((err) => (err ? res.status(402).send({ message: err }) : 0));
+        user.save((err) =>
+          err
+            ? res.status(500).send({ message: "Failed to update login state" })
+            : 0
+        );
       }, 15 * 60 * 1000);
       user.failLoginCount = waitingSingleton + 5; //save timeoutId instead the counter, +5 for surely have more than 4 fail attempts
-      res.status(403).send({
+      res.status(429).send({
         message:
           "Too many fail attempts! Please try again in 15 minutes or reset your password.",
       });
@@ -122,7 +130,7 @@ const userControllers = {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res
-        .status(406)
+        .status(400)
         .json({ message: errors.array().map(({ msg }) => msg) });
     }
     const existUser = await User.findOne({ email: req.body.email });
@@ -158,7 +166,7 @@ const userControllers = {
     const errors = validationResult(req);
     if ((req.body.name || req.body.email) && !errors.isEmpty())
       return res
-        .status(401)
+        .status(400)
         .json({ message: errors.array().map(({ msg }) => msg) });
 
     const user = await User.findById(req.user._id);
@@ -183,7 +191,7 @@ const userControllers = {
         return res.status(401).send({ message: "Invalid email or password" });
       if (req.body.password !== req.body.confirmPassword)
         return res
-          .status(401)
+          .status(400)
           .send({ message: "Password and Confirmation are not match" });
     }
 
