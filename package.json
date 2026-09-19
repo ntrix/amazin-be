@@ -10,7 +10,10 @@
     "devstart": "nodemon --watch --exec node --experimental-modules server.js",
     "test": "vitest run",
     "lint": "eslint .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "migrate": "migrate-mongo up -f migrate-mongo-config.cjs",
+    "migrate:status": "migrate-mongo status -f migrate-mongo-config.cjs",
+    "migrate:create": "migrate-mongo create -f migrate-mongo-config.cjs"
   },
   "repository": {
     "type": "git",
@@ -38,6 +41,7 @@
     "express-validator": "^6.12.1",
     "helmet": "^4.6.0",
     "jsonwebtoken": "^8.5.1",
+    "migrate-mongo": "^14.0.7",
     "mongoose": "^5.13.17",
     "mongoose-float": "^1.0.4",
     "multer": "^1.4.3",
