@@ -55,7 +55,7 @@ const userControllers = {
     const user = await User.findOne({ email: req.body.email });
     if (!user)
       return res
-        .status(404)
+        .status(401)
         .send({ message: "Invalid username or email or password" });
 
     let count = (user.failLoginCount || 0) + 1;
