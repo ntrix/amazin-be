@@ -1,51 +1,40 @@
-import sgMail from "@sendgrid/mail";
-import bcrypt from "bcryptjs";
-import { validationResult } from "express-validator";
-import { generateToken } from "../auth/token.js";
-import User from "../models/userModel.js";
-import { data } from "../seed.data.js";
+import sgMail from '@sendgrid/mail';
+import bcrypt from 'bcryptjs';
+import { validationResult } from 'express-validator';
+import { generateToken } from '../auth/token.js';
+import User from '../models/userModel.js';
+import { data } from '../seed.data.js';
 
-const NOT_FOUND = "User Not Found";
-
-const sanitizeForLog = (value) => String(value ?? "").replace(/[\r\n]/g, " ");
+const NOT_FOUND = 'User Not Found';
 
 const userControllers = {
-  postContact(req, res) {
+  async postContact(req, res) {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     const { name, email, phone, text } = req.body;
     try {
-      sgMail.send({
+      await sgMail.send({
         to: process.env.TOMAIL,
         from: process.env.FROMMAIL,
-        subject: `contact from name:${name} email:${email} phone:${
-          phone || ""
-        }`,
-        text: "Nachricht: " + text,
-        html: "<strong>Nachricht</strong>: " + text,
+        subject: `contact from name:${name} email:${email} phone:${phone || ''}`,
+        text: 'Nachricht: ' + text,
+        html: '<strong>Nachricht</strong>: ' + text,
       });
-      res.status(200).send("ok");
-      console.log(
-        `contact from name:${sanitizeForLog(name)} email:${sanitizeForLog(
-          email
-        )} phone:${sanitizeForLog(phone)} `,
-        sanitizeForLog(text)
-      );
+      res.status(200).send('ok');
+      req.log.info({ name, email, phone }, 'contact form submitted');
     } catch (err) {
-      res.status(500).send(err);
+      req.log.error({ err }, 'failed to send contact email');
+      res.status(500).send({ message: 'Failed to send message' });
     }
   },
 
   async getTopSellers(req, res) {
-    const topSellers = await User.find({ isSeller: true })
-      .select("-password")
-      .sort({ "seller.rating": -1 })
-      .limit(5);
+    const topSellers = await User.find({ isSeller: true }).select('-password').sort({ 'seller.rating': -1 }).limit(5);
     res.send(topSellers);
   },
 
   async seed(req, res) {
     if ((await User.countDocuments()) > 0) {
-      return res.status(403).send({ message: "Already seeded" });
+      return res.status(403).send({ message: 'Already seeded' });
     }
     const createdUsers = await User.insertMany(data.users);
     res.send({ createdUsers });
@@ -54,15 +43,10 @@ const userControllers = {
   async signIn(req, res) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res
-        .status(401)
-        .json({ message: errors.array().map(({ msg }) => msg) });
+      return res.status(401).json({ message: errors.array().map(({ msg }) => msg) });
     }
     const user = await User.findOne({ email: req.body.email });
-    if (!user)
-      return res
-        .status(404)
-        .send({ message: "Invalid username or email or password" });
+    if (!user) return res.status(404).send({ message: 'Invalid username or email or password' });
 
     let count = (user.failLoginCount || 0) + 1;
 
@@ -81,18 +65,15 @@ const userControllers = {
     }
 
     user.failLoginCount = count;
-    if (count < 3)
-      res
-        .status(401)
-        .send({ message: "Wrong password! " + count + " of 4 attempts." });
+    if (count < 3) res.status(401).send({ message: 'Wrong password! ' + count + ' of 4 attempts.' });
     else if (count < 5) {
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
       const msg = {
         to: user.email,
         from: process.env.FROMMAIL,
-        subject: "Warning! too many failed attempts by logging in",
+        subject: 'Warning! too many failed attempts by logging in',
         text: `You have reached ${count}/4 attempts to login. Please be careful or your account will be locked permanent.`,
-        html: "<b>You can also retry in 15 minutes or reset your password</b>",
+        html: '<b>You can also retry in 15 minutes or reset your password</b>',
       };
       try {
         await sgMail.send(msg);
@@ -107,14 +88,16 @@ const userControllers = {
     } else {
       //case count = timeId + 5, is > 5
       clearTimeout(user.failLoginCount - 5); //-5 to get back the right timeoutId
-      const waitingSingleton = setTimeout(() => {
-        user.failLoginCount = 3;
-        user.save((err) => (err ? res.status(402).send({ message: err }) : 0));
-      }, 15 * 60 * 1000);
+      const waitingSingleton = setTimeout(
+        () => {
+          user.failLoginCount = 3;
+          user.save((err) => (err ? res.status(402).send({ message: err }) : 0));
+        },
+        15 * 60 * 1000,
+      );
       user.failLoginCount = waitingSingleton + 5; //save timeoutId instead the counter, +5 for surely have more than 4 fail attempts
       res.status(403).send({
-        message:
-          "Too many fail attempts! Please try again in 15 minutes or reset your password.",
+        message: 'Too many fail attempts! Please try again in 15 minutes or reset your password.',
       });
     }
     try {
@@ -127,13 +110,11 @@ const userControllers = {
   async signUp(req, res) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res
-        .status(406)
-        .json({ message: errors.array().map(({ msg }) => msg) });
+      return res.status(406).json({ message: errors.array().map(({ msg }) => msg) });
     }
     const existUser = await User.findOne({ email: req.body.email });
     if (existUser) {
-      return res.status(409).json({ message: "Email is already in use!" });
+      return res.status(409).json({ message: 'Email is already in use!' });
     }
     const user = new User({
       name: req.body.name,
@@ -152,7 +133,7 @@ const userControllers = {
   },
 
   async getUser(req, res) {
-    const user = await User.findById(req.params.id).select("-password");
+    const user = await User.findById(req.params.id).select('-password');
     if (user) {
       res.send(user);
     } else {
@@ -163,9 +144,7 @@ const userControllers = {
   async updateProfile(req, res) {
     const errors = validationResult(req);
     if ((req.body.name || req.body.email) && !errors.isEmpty())
-      return res
-        .status(401)
-        .json({ message: errors.array().map(({ msg }) => msg) });
+      return res.status(401).json({ message: errors.array().map(({ msg }) => msg) });
 
     const user = await User.findById(req.user._id);
 
@@ -180,21 +159,17 @@ const userControllers = {
       user.isSeller = true; //verify and apply new seller profile from user acc
       user.seller.name = req.body.seller.name || user.seller.name || user.name;
       user.seller.logo = req.body.seller.logo || user.seller.logo;
-      user.seller.description =
-        req.body.seller.description || user.seller.description;
+      user.seller.description = req.body.seller.description || user.seller.description;
     }
 
     if (req.body.oldPassword) {
       if (!bcrypt.compareSync(req.body.oldPassword, user.password))
-        return res.status(401).send({ message: "Invalid email or password" });
+        return res.status(401).send({ message: 'Invalid email or password' });
       if (req.body.password !== req.body.confirmPassword)
-        return res
-          .status(401)
-          .send({ message: "Password and Confirmation are not match" });
+        return res.status(401).send({ message: 'Password and Confirmation are not match' });
     }
 
-    if (req.body.password)
-      user.password = bcrypt.hashSync(req.body.password, 8);
+    if (req.body.password) user.password = bcrypt.hashSync(req.body.password, 8);
 
     const updatedUser = await user.save();
     return res.send({
@@ -210,7 +185,7 @@ const userControllers = {
   },
 
   async getAllUsers(req, res) {
-    const users = await User.find({}).select("-password");
+    const users = await User.find({}).select('-password');
     res.send(users);
   },
 
@@ -218,11 +193,11 @@ const userControllers = {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).send({ message: NOT_FOUND });
 
-    if (user.email === "admin@admin.com" || user.isAdmin)
-      return res.status(403).send({ message: "Can Not Delete Admin User" });
+    if (user.email === 'admin@admin.com' || user.isAdmin)
+      return res.status(403).send({ message: 'Can Not Delete Admin User' });
 
     const deleteUser = await user.remove();
-    return res.send({ message: "User Deleted", user: deleteUser });
+    return res.send({ message: 'User Deleted', user: deleteUser });
   },
 
   async editUser(req, res) {
@@ -237,10 +212,10 @@ const userControllers = {
 
     user.isSeller = Boolean(req.body.isSeller);
     user.seller.name = user.seller.name || user.name;
-    user.seller.logo = user.seller.logo || "/images/default-logo.png";
+    user.seller.logo = user.seller.logo || '/images/default-logo.png';
 
     const updatedUser = await user.save();
-    return res.send({ message: "User Updated", user: updatedUser });
+    return res.send({ message: 'User Updated', user: updatedUser });
   },
 };
 
