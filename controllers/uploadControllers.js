@@ -1,5 +1,6 @@
 import cloudinary from "cloudinary";
 import Product from "../models/productModel.js";
+import { BadRequestError } from "../lib/errors.js";
 
 const uploadControllers = {
   async uploadImages(req, res) {
@@ -17,8 +18,7 @@ const uploadControllers = {
         .send({ message: "Something wrong happens. Product Not Found" });
 
     const images = req.files;
-    if (!images)
-      return res.status(411).send({ message: "No Image has been sent" });
+    if (!images) throw new BadRequestError("No Image has been sent");
 
     const cloudImages = images.map(
       (image) =>

@@ -1,5 +1,6 @@
 import Order from "../models/orderModel.js";
 import { isOrderOwnerOrAdmin, isOrderSellerOrAdmin } from "../domain/authorization.js";
+import { BadRequestError } from "../lib/errors.js";
 
 const NOT_FOUND = "Order Not Found";
 const UNAUTHORIZED = "Unauthorized zone";
@@ -23,8 +24,7 @@ const orderControllers = {
 
   async createOrder(req, res) {
     if (req.body.orderItems.length === 0) {
-      res.status(411).send({ message: "Cart is empty" });
-      return;
+      throw new BadRequestError("Cart is empty");
     }
     const order = new Order({
       seller: req.body.orderItems[0].seller,
