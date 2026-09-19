@@ -20,6 +20,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
       - name: Run tests with coverage
         env:
           JWT_SECRET_A: test-jwt-secret

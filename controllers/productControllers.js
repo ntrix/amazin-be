@@ -13,17 +13,12 @@ const productControllers = {
   },
 
   async adminUpdate(req, res) {
+    // one-off migration, currently disabled - uncomment and adapt the
+    // update spec below before re-enabling:
     // const pList = await Product.updateMany({}, [
     //   { $set: { video: { $concat: ["$video", "$brand"] } } },
     // ]);
-
-    // { category: "Computers" },
-    //   {
-    //     $set: {
-    //       ship: 9.99,
-    //     },
-    //   }
-    res.json({ pList });
+    res.json({ message: "No update operation configured" });
   },
 
   async getProducts(req, res) {
