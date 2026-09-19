@@ -47,7 +47,7 @@ const orderControllers = {
     if (!order) return res.status(404).send({ message: NOT_FOUND });
 
     if (!isOrderOwnerOrAdmin(order, req.user))
-      return res.status(401).send({ message: UNAUTHORIZED });
+      return res.status(403).send({ message: UNAUTHORIZED });
 
     return res.send(order);
   },
@@ -58,7 +58,7 @@ const orderControllers = {
     if (!order) return res.status(404).send({ message: NOT_FOUND });
 
     if (!isOrderOwnerOrAdmin(order, req.user))
-      return res.status(401).send({ message: UNAUTHORIZED });
+      return res.status(403).send({ message: UNAUTHORIZED });
 
     order.isPaid = true;
     order.paidAt = Date.now();
@@ -87,7 +87,7 @@ const orderControllers = {
     if (!order) return res.status(404).send({ message: NOT_FOUND });
 
     if (!isOrderSellerOrAdmin(order, req.user))
-      return res.status(401).send({ message: UNAUTHORIZED });
+      return res.status(403).send({ message: UNAUTHORIZED });
 
     order.isDelivered = true;
     order.deliveredAt = Date.now();
