@@ -21,8 +21,7 @@
   "homepage": "https://github.com/ntrix/amazin#readme",
   "lint-staged": {
     "*.js": [
-      "eslint --fix",
-      "prettier --write"
+      "eslint --fix"
     ]
   },
   "dependencies": {
@@ -52,7 +51,6 @@
     "lint-staged": "^15.5.2",
     "mongodb-memory-server": "^11.2.0",
     "nodemon": "^2.0.22",
-    "prettier": "^3.9.8",
     "supertest": "^7.2.2",
     "vitest": "^5.0.0"
   },
