@@ -62,7 +62,11 @@ const userControllers = {
 
     if (bcrypt.compareSync(req.body.password, user.password)) {
       user.failLoginCount = 0; //reset fail attempts count by success login
-      user.save((err) => (err ? res.status(402).send({ message: err }) : 0));
+      user.save((err) =>
+        err
+          ? res.status(500).send({ message: "Failed to update login state" })
+          : 0
+      );
       return res.send({
         _id: user._id,
         name: user.name,
@@ -103,7 +107,11 @@ const userControllers = {
       clearTimeout(user.failLoginCount - 5); //-5 to get back the right timeoutId
       const waitingSingleton = setTimeout(() => {
         user.failLoginCount = 3;
-        user.save((err) => (err ? res.status(402).send({ message: err }) : 0));
+        user.save((err) =>
+          err
+            ? res.status(500).send({ message: "Failed to update login state" })
+            : 0
+        );
       }, 15 * 60 * 1000);
       user.failLoginCount = waitingSingleton + 5; //save timeoutId instead the counter, +5 for surely have more than 4 fail attempts
       res.status(403).send({
