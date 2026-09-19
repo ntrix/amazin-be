@@ -106,7 +106,7 @@ const productControllers = {
 
   async seedDB(req, res) {
     if ((await Product.countDocuments()) > 0) {
-      return res.status(403).send({ message: "Already seeded" });
+      return res.status(409).send({ message: "Already seeded" });
     }
     const seller = await User.findOne({ isSeller: true });
     if (seller) {
