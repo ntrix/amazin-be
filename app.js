@@ -4,6 +4,8 @@ import helmet from "helmet";
 import path from "path";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import pinoHttp from "pino-http";
+import logger from "./lib/logger.js";
 import productRoute from "./routes/productRoute.js";
 import userRoute from "./routes/userRoute.js";
 import orderRoute from "./routes/orderRoute.js";
@@ -16,6 +18,7 @@ app.use(
     referrerPolicy: { policy: "no-referrer-when-downgrade" },
   })
 );
+app.use(pinoHttp({ logger }));
 
 const allowedOrigins = (
   process.env.CORS_ORIGINS || "http://localhost:3000"
@@ -47,7 +50,7 @@ app.get("*", (req, res) => res.status(404).send({ message: "Page not found" }));
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
-  console.error(err);
+  req.log.error({ err }, "unhandled request error");
   res.status(500).send({ message: "Internal server error" });
 });
 

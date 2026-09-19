@@ -7,14 +7,12 @@ import { data } from "../seed.data.js";
 
 const NOT_FOUND = "User Not Found";
 
-const sanitizeForLog = (value) => String(value ?? "").replace(/[\r\n]/g, " ");
-
 const userControllers = {
-  postContact(req, res) {
+  async postContact(req, res) {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     const { name, email, phone, text } = req.body;
     try {
-      sgMail.send({
+      await sgMail.send({
         to: process.env.TOMAIL,
         from: process.env.FROMMAIL,
         subject: `contact from name:${name} email:${email} phone:${
@@ -24,14 +22,10 @@ const userControllers = {
         html: "<strong>Nachricht</strong>: " + text,
       });
       res.status(200).send("ok");
-      console.log(
-        `contact from name:${sanitizeForLog(name)} email:${sanitizeForLog(
-          email
-        )} phone:${sanitizeForLog(phone)} `,
-        sanitizeForLog(text)
-      );
+      req.log.info({ name, email, phone }, "contact form submitted");
     } catch (err) {
-      res.status(500).send(err);
+      req.log.error({ err }, "failed to send contact email");
+      res.status(500).send({ message: "Failed to send message" });
     }
   },
 
