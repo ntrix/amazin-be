@@ -49,7 +49,7 @@ const userControllers = {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res
-        .status(401)
+        .status(400)
         .json({ message: errors.array().map(({ msg }) => msg) });
     }
     const user = await User.findOne({ email: req.body.email });
@@ -130,7 +130,7 @@ const userControllers = {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res
-        .status(406)
+        .status(400)
         .json({ message: errors.array().map(({ msg }) => msg) });
     }
     const existUser = await User.findOne({ email: req.body.email });
@@ -166,7 +166,7 @@ const userControllers = {
     const errors = validationResult(req);
     if ((req.body.name || req.body.email) && !errors.isEmpty())
       return res
-        .status(401)
+        .status(400)
         .json({ message: errors.array().map(({ msg }) => msg) });
 
     const user = await User.findById(req.user._id);
@@ -191,7 +191,7 @@ const userControllers = {
         return res.status(401).send({ message: "Invalid email or password" });
       if (req.body.password !== req.body.confirmPassword)
         return res
-          .status(401)
+          .status(400)
           .send({ message: "Password and Confirmation are not match" });
     }
 
