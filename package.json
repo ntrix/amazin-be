@@ -9,6 +9,7 @@
     "start": "node server.js",
     "devstart": "nodemon --watch --exec node --experimental-modules server.js",
     "test": "vitest run",
+    "lint": "eslint .",
     "prepare": "husky"
   },
   "repository": {
@@ -20,6 +21,7 @@
   "homepage": "https://github.com/ntrix/amazin#readme",
   "lint-staged": {
     "*.js": [
+      "eslint --fix",
       "prettier --write"
     ]
   },
@@ -46,7 +48,6 @@
     "@commitlint/config-conventional": "^19.8.1",
     "@vitest/coverage-v8": "^5.0.0",
     "eslint": "^7.32.0",
-    "eslint-plugin-react": "^7.25.2",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
     "mongodb-memory-server": "^11.2.0",
