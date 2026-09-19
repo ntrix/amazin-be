@@ -39,14 +39,10 @@ const uploadControllers = {
         )
     );
 
-    try {
-      const urls = await Promise.all(cloudImages);
-      product.image = [product.image, ...urls].join("^");
-      product.save();
-      res.send(urls);
-    } catch (error) {
-      res.status(503).send({ message: "here" + error });
-    }
+    const urls = await Promise.all(cloudImages);
+    product.image = [product.image, ...urls].join("^");
+    await product.save();
+    res.send(urls);
   },
 
   async updateImages(req, res) {
@@ -65,12 +61,8 @@ const uploadControllers = {
     cloudinary.v2.uploader.destroy(`amazin/${productId}/${imgName}`);
 
     product.image = image;
-    try {
-      product.save();
-      res.send({ message: "updated to DB" });
-    } catch (error) {
-      res.status(503).send({ message: error });
-    }
+    await product.save();
+    res.send({ message: "updated to DB" });
   },
 };
 

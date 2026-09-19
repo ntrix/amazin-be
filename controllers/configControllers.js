@@ -62,7 +62,7 @@ const configControllers = {
         { mode: "cors" }
       )
       .then((response) => res.json(response.data))
-      .catch((error) => res.status(404).send({ message: error }));
+      .catch((error) => res.status(500).send({ message: error }));
   },
 };
 
