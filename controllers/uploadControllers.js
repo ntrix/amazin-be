@@ -1,6 +1,6 @@
 import cloudinary from "cloudinary";
 import Product from "../models/productModel.js";
-import { BadRequestError } from "../lib/errors.js";
+import { BadRequestError, NotFoundError } from "../lib/errors.js";
 
 const uploadControllers = {
   async uploadImages(req, res) {
@@ -13,9 +13,7 @@ const uploadControllers = {
     const { productId } = req.body;
     const product = await Product.findById(productId);
     if (!product)
-      return res
-        .status(404)
-        .send({ message: "Something wrong happens. Product Not Found" });
+      throw new NotFoundError("Something wrong happens. Product Not Found");
 
     const images = req.files;
     if (!images) throw new BadRequestError("No Image has been sent");
@@ -62,9 +60,7 @@ const uploadControllers = {
     const imgName = imgLink.split("/").pop(); // img file name is the only last piece of url
     const product = await Product.findById(productId);
     if (!product)
-      return res
-        .status(417)
-        .send({ message: "Something wrong happens. Product Not Found" });
+      throw new NotFoundError("Something wrong happens. Product Not Found");
 
     cloudinary.v2.uploader.destroy(`amazin/${productId}/${imgName}`);
 
