@@ -6,6 +6,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
 import logger from "./lib/logger.js";
+import { AppError } from "./lib/errors.js";
 import productRoute from "./routes/productRoute.js";
 import userRoute from "./routes/userRoute.js";
 import orderRoute from "./routes/orderRoute.js";
@@ -50,6 +51,10 @@ app.get("*", (req, res) => res.status(404).send({ message: "Page not found" }));
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
+  if (err instanceof AppError) {
+    req.log.warn({ err }, "request rejected");
+    return res.status(err.statusCode).send({ message: err.message });
+  }
   req.log.error({ err }, "unhandled request error");
   res.status(500).send({ message: "Internal server error" });
 });
