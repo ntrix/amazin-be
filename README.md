@@ -142,6 +142,9 @@ flowchart TB
   Alarms --> SNS["SNS Topic"]
   SNS --> Email([Email])
 
+  Task2 -. "image upload" .-> Cloudinary[("Cloudinary")]
+  Task2 -. "contact/alert email" .-> SendGrid[("SendGrid")]
+
   Task2 -. "unhandled errors" .-> Sentry[("Sentry")]
   Task2 -. "APM traces" .-> NewRelic[("New Relic")]
   Task2 -. "docs (planned)" .-> OpenAPI["OpenAPI<br>/api-docs"]
