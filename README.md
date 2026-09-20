@@ -78,9 +78,9 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | 12c  | Typed `AppError` hierarchy — normalized 9 misused HTTP status codes | Done |
 | 12d  | DB migrations via [migrate-mongo][migratemongo]: query indexes + a stock-level seed | Done |
 | 12e  | Orders check stock atomically on creation — no overselling, no lost-update race | Done |
-| 12f  | Test suite: 14→22 files, 40→67 tests, ~53%→70% line coverage | Done |
-| 12g  | Fixed a seed-data bug that silently truncated the demo dataset | Done |
-| 12h  | Fixed a flaky parallel-test race in the shared DB connection | Done |
+| 13a  | Test suite: 14→22 files, 40→67 tests, ~53%→70% line coverage | Done |
+| 13b  | Fixed a seed-data bug that silently truncated the demo dataset | Done |
+| 13c  | Fixed a flaky parallel-test race in the shared DB connection | Done |
 
 ## Architecture
 
