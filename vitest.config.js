@@ -12,6 +12,7 @@ export default defineConfig({
     fileParallelism: false,
     env: {
       JWT_SECRET_A: "test-jwt-secret",
+      JWT_REFRESH_SECRET: "test-jwt-refresh-secret",
       CORS_ORIGINS: "http://localhost:3000",
     },
     coverage: {

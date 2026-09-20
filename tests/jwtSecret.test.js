@@ -1,10 +1,12 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 
 describe("JWT secret fail-fast", () => {
-  const original = process.env.JWT_SECRET_A;
+  const originalAccess = process.env.JWT_SECRET_A;
+  const originalRefresh = process.env.JWT_REFRESH_SECRET;
 
   afterEach(() => {
-    process.env.JWT_SECRET_A = original;
+    process.env.JWT_SECRET_A = originalAccess;
+    process.env.JWT_REFRESH_SECRET = originalRefresh;
     vi.resetModules();
   });
 
@@ -16,10 +18,21 @@ describe("JWT secret fail-fast", () => {
     );
   });
 
-  it("loads fine once JWT_SECRET_A is set", async () => {
+  it("throws on import when JWT_REFRESH_SECRET is unset", async () => {
     process.env.JWT_SECRET_A = "some-secret";
+    delete process.env.JWT_REFRESH_SECRET;
+    vi.resetModules();
+    await expect(import("../auth/token.js")).rejects.toThrow(
+      "JWT_REFRESH_SECRET environment variable is required"
+    );
+  });
+
+  it("loads fine once both secrets are set", async () => {
+    process.env.JWT_SECRET_A = "some-secret";
+    process.env.JWT_REFRESH_SECRET = "some-other-secret";
     vi.resetModules();
     const mod = await import("../auth/token.js");
-    expect(mod.generateToken).toBeTypeOf("function");
+    expect(mod.generateAccessToken).toBeTypeOf("function");
+    expect(mod.generateRefreshToken).toBeTypeOf("function");
   });
 });

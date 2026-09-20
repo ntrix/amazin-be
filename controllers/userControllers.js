@@ -1,7 +1,14 @@
 import sgMail from "@sendgrid/mail";
 import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
-import { generateToken } from "../auth/token.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+  setRefreshCookie,
+  clearRefreshCookie,
+  getRefreshCookie,
+} from "../auth/token.js";
 import User from "../models/userModel.js";
 import { data } from "../seed.data.js";
 import logger from "../lib/logger.js";
@@ -68,6 +75,7 @@ const userControllers = {
       } catch {
         return res.status(500).send({ message: "Failed to update login state" });
       }
+      setRefreshCookie(res, generateRefreshToken(user));
       return res.send({
         _id: user._id,
         name: user.name,
@@ -75,7 +83,7 @@ const userControllers = {
         isAdmin: user.isAdmin,
         isSeller: user.isSeller,
         currency: user.currency,
-        token: generateToken(user),
+        token: generateAccessToken(user),
       });
     }
 
@@ -146,13 +154,14 @@ const userControllers = {
       password: bcrypt.hashSync(req.body.password, 8),
     });
     const createdUser = await user.save();
+    setRefreshCookie(res, generateRefreshToken(createdUser));
     res.send({
       _id: createdUser._id,
       name: createdUser.name,
       email: createdUser.email,
       isAdmin: createdUser.isAdmin,
       isSeller: user.isSeller,
-      token: generateToken(createdUser),
+      token: generateAccessToken(createdUser),
     });
   },
 
@@ -210,7 +219,7 @@ const userControllers = {
       isAdmin: updatedUser.isAdmin,
       isSeller: updatedUser.isSeller,
       seller: updatedUser.seller,
-      token: generateToken(updatedUser),
+      token: generateAccessToken(updatedUser),
     });
   },
 
@@ -246,6 +255,38 @@ const userControllers = {
 
     const updatedUser = await user.save();
     return res.send({ message: "User Updated", user: updatedUser });
+  },
+
+  async refresh(req, res) {
+    const token = getRefreshCookie(req);
+    if (!token) return res.status(401).send({ message: "No refresh token" });
+
+    let decoded;
+    try {
+      decoded = await verifyRefreshToken(token);
+    } catch {
+      clearRefreshCookie(res);
+      return res.status(401).send({ message: "Invalid refresh token" });
+    }
+
+    const user = await User.findById(decoded._id);
+    if (!user || user.refreshTokenVersion !== decoded.tokenVersion) {
+      clearRefreshCookie(res);
+      return res.status(401).send({ message: "Refresh token revoked" });
+    }
+
+    // rotate on every use, narrowing the window a stolen refresh token is valid for
+    setRefreshCookie(res, generateRefreshToken(user));
+    res.send({ token: generateAccessToken(user) });
+  },
+
+  async logout(req, res) {
+    await User.updateOne(
+      { _id: req.user._id },
+      { $inc: { refreshTokenVersion: 1 } }
+    );
+    clearRefreshCookie(res);
+    res.send({ message: "Logged out" });
   },
 };
 

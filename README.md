@@ -13,7 +13,7 @@ This is the REST API powering [Amazin' Amazim Store][fenx] — a long-term perso
 
 ### Features
 
-- JWT authentication (sign in, register), with a bearer-token middleware gate (`checkToken`) and role guards (`isAdmin`, `isSeller`, `isSellerOrAdmin`)
+- JWT authentication (sign in, register): short-lived (15m) access token in the response body, long-lived (7d) refresh token as an httpOnly cookie with rotation + server-side revocation on logout — bearer-token middleware gate (`checkToken`) and role guards (`isAdmin`, `isSeller`, `isSellerOrAdmin`)
 - Users: sign in, register, profile update, admin user management (list/edit/delete), top-seller listing
 - Products: list/search/filter, categories, CRUD (seller/admin only), product reviews
 - Orders: create, pay, deliver, list mine / list all (seller/admin), delete (admin)
@@ -189,7 +189,8 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 | Variable | What it's for | Where to get it |
 | -------- | -------------- | ---------------- |
 | `MONGODB_URL` | Database connection string | [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) — free M0 cluster, add a database user, then **Connect → Drivers** and copy the URI (fill in the password yourself) |
-| `JWT_SECRET_A` | Signs/verifies auth tokens | Not a service — any random string you generate yourself, e.g. `openssl rand -hex 32` |
+| `JWT_SECRET_A` | Signs/verifies short-lived (15m) access tokens | Not a service — any random string you generate yourself, e.g. `openssl rand -hex 32` |
+| `JWT_REFRESH_SECRET` | Signs/verifies long-lived (7d) refresh tokens, sent only as an httpOnly cookie | Not a service — a **different** random string from `JWT_SECRET_A` (so leaking one secret doesn't compromise the other), e.g. `openssl rand -hex 32` |
 | `CD_NAME`, `CD_API_KEY`, `CD_API_SECRET` | Image hosting | [Cloudinary](https://cloudinary.com/) free account — all three values are shown on the Dashboard home page |
 | `GOOGLE_API_KEY` | Google Maps (shipping address picker) | [Google Cloud Console](https://console.cloud.google.com/) → enable **Maps JavaScript API** → **APIs & Services → Credentials** → create an API key (needs a billing account on file, but this app's usage stays inside Google's free monthly credit) |
 | `PAYPAL_CLIENT_ID` | Checkout payment button | [PayPal Developer](https://developer.paypal.com/) → **My Apps & Credentials** → create a Sandbox app and copy its Client ID; leave unset and it falls back to PayPal's public sandbox id (`sb`) |
