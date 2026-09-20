@@ -63,4 +63,38 @@ describe("getProducts", () => {
     expect(res.body.count).toBe(3);
     expect(res.body.pages).toBe(2);
   });
+
+  it("falls back to regex search by name when ATLAS_SEARCH_ENABLED is not set", async () => {
+    await seedCatalog();
+    expect(process.env.ATLAS_SEARCH_ENABLED).not.toBe("true");
+
+    const res = await request(app).get("/api/products").query({ name: "shirt" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.products.map((p) => p.name).sort()).toEqual([
+      "Cheap Shirt",
+      "Mid Shirt",
+    ]);
+    expect(res.body.count).toBe(2);
+  });
+
+  it("routes name search through Atlas Search when ATLAS_SEARCH_ENABLED is true, falling back to regex on failure", async () => {
+    await seedCatalog();
+    process.env.ATLAS_SEARCH_ENABLED = "true";
+
+    try {
+      const res = await request(app).get("/api/products").query({ name: "shirt" });
+
+      // mongodb-memory-server doesn't support $search - the controller must
+      // catch that and fall back to the same regex results as the test above,
+      // not 500 or return an empty page.
+      expect(res.status).toBe(200);
+      expect(res.body.products.map((p) => p.name).sort()).toEqual([
+        "Cheap Shirt",
+        "Mid Shirt",
+      ]);
+    } finally {
+      delete process.env.ATLAS_SEARCH_ENABLED;
+    }
+  });
 });
