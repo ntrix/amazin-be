@@ -115,10 +115,10 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-  GitHubBE["GitHub: BE push to main<br/><b>amazin-be</b>"] -.->|"native auto-deploy"| Render2
-  GitHubBE --> ActionsBE["GitHub BE Actions<br/>OIDC role"]
+  GitHubBE["GitHub: BE push to main<br/><b>amazin-be</b>"] --> ActionsBE["GitHub BE Actions<br/>OIDC role"]
   ActionsBE -->|"push image"| ECR2[("ECR")]
   ActionsBE -->|"register + deploy"| Service2
+  GitHubBE -.->|"native auto-deploy"| Render2
 
   DNS["Namecheap DNS<br/>api.tiennguyen.de"] -. CNAME .-> ALB2
   ACM["ACM Certificate<br/>*.tiennguyen.de"] -. "TLS cert" .-> ALB2
