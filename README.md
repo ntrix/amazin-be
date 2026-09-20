@@ -182,6 +182,8 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 | `NODE_ENV` | `development` or `production` | Set by you, not from a service |
 | `SENTRY_DSN` | Error tracking (real 500s only) | [Sentry](https://sentry.io/) free plan → create a Node project → DSN shown on setup; optional, skipped if unset |
 
+Sentry here is error-tracking only, tracing turned off on purpose — its own free-tier tracing would overlap with a dedicated APM tool, and a dedicated APM gives better performance dashboards/alerting than a bolted-on tracing feature. Extra integration surface, but no double-counted signal.
+
 ### Or with Docker
 
 ```
