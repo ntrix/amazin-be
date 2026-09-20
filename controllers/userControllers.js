@@ -4,6 +4,7 @@ import { validationResult } from "express-validator";
 import { generateToken } from "../auth/token.js";
 import User from "../models/userModel.js";
 import { data } from "../seed.data.js";
+import logger from "../lib/logger.js";
 
 const NOT_FOUND = "User Not Found";
 
@@ -62,11 +63,11 @@ const userControllers = {
 
     if (bcrypt.compareSync(req.body.password, user.password)) {
       user.failLoginCount = 0; //reset fail attempts count by success login
-      user.save((err) =>
-        err
-          ? res.status(500).send({ message: "Failed to update login state" })
-          : 0
-      );
+      try {
+        await user.save();
+      } catch {
+        return res.status(500).send({ message: "Failed to update login state" });
+      }
       return res.send({
         _id: user._id,
         name: user.name,
@@ -105,13 +106,14 @@ const userControllers = {
     } else {
       //case count = timeId + 5, is > 5
       clearTimeout(user.failLoginCount - 5); //-5 to get back the right timeoutId
-      const waitingSingleton = setTimeout(() => {
+      const waitingSingleton = setTimeout(async () => {
         user.failLoginCount = 3;
-        user.save((err) =>
-          err
-            ? res.status(500).send({ message: "Failed to update login state" })
-            : 0
-        );
+        try {
+          await user.save();
+        } catch (err) {
+          // response was already sent 15 minutes ago; nothing to send this to
+          logger.error({ err, userId: user._id }, "failed to reset login lockout state");
+        }
       }, 15 * 60 * 1000);
       user.failLoginCount = waitingSingleton + 5; //save timeoutId instead the counter, +5 for surely have more than 4 fail attempts
       res.status(429).send({
@@ -120,9 +122,10 @@ const userControllers = {
       });
     }
     try {
-      user.save();
+      await user.save();
     } catch (err) {
-      res.status(403).send({ message: err });
+      // response was already sent above; nothing to send this to
+      logger.error({ err, userId: user._id }, "failed to persist failed-login count");
     }
   },
 
@@ -223,8 +226,8 @@ const userControllers = {
     if (user.email === "admin@admin.com" || user.isAdmin)
       return res.status(403).send({ message: "Can Not Delete Admin User" });
 
-    const deleteUser = await user.remove();
-    return res.send({ message: "User Deleted", user: deleteUser });
+    await user.deleteOne();
+    return res.send({ message: "User Deleted", user });
   },
 
   async editUser(req, res) {
