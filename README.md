@@ -144,7 +144,6 @@ flowchart TB
 
   Task2 -. "image upload" .-> Cloudinary[("Cloudinary")]
   Task2 -. "contact/alert email" .-> SendGrid[("SendGrid")]
-  Task2 -. "currency rates" .-> Rates[("exchangeratesapi.io")]
 
   Task2 -. "unhandled errors" .-> Sentry[("Sentry")]
   Task2 -. "APM traces" .-> NewRelic[("New Relic")]
