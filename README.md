@@ -122,14 +122,14 @@ flowchart TB
   DNS["Namecheap DNS<br/>api.tiennguyen.de"] -. CNAME .-> ALB2
   ACM["ACM Certificate<br/>*.tiennguyen.de"] -. "TLS cert" .-> ALB2
 
-  Internet2([Internet]) -->|"HTTPS :443"| ALB2["ALB"]
+  ~~~Internet2([Internet]) -->|"HTTPS :443"| ALB2["ALB"]
   ALB2 -->|forwards| TG2["Target Group"]
   TG2 -->|"routes by IP"| Task2["Fargate Task"]
   Task2 -->|queries| Mongo2[("MongoDB Atlas")]
   Service2["ECS Service"] -->|"launches, restarts"| Task2
   Service2 -->|registers| TG2
 
-  Role2["IAM Execution Role"] -. "task assumes" .-> Task2
+  ~~~Role2["IAM Execution Role"] -. "task assumes" .-> Task2
   Role2 -. "pulls image" .-> ECR2
   Role2 -. "writes logs" .-> Logs2[("CloudWatch Logs")]
   Role2 -. "reads secrets" .-> SSM2[("SSM + KMS")]
