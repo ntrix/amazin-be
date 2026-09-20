@@ -118,6 +118,7 @@ flowchart TB
   GitHubBE["GitHub: BE push to main<br/><b>amazin-be</b>"] --> ActionsBE["GitHub BE Actions<br/>OIDC role"]
   ActionsBE -->|"push image"| ECR2[("ECR")]
   ActionsBE -->|"register + deploy"| Service2
+  GitHubBE -.->|"native auto-deploy"| Render2
 
   DNS["Namecheap DNS<br/>api.tiennguyen.de"] -. CNAME .-> ALB2
   ACM["ACM Certificate<br/>*.tiennguyen.de"] -. "TLS cert" .-> ALB2
@@ -163,8 +164,8 @@ flowchart TB
 
 Unit tests run on every push/PR via GitHub Actions, with coverage reported to Codecov and code smells to SonarQube Cloud (badges at the top of this page).
 
-- 19 test files, 56 tests
-- ~63% line coverage
+- 21 test files, 65 tests
+- ~70% line coverage
 - Real, ephemeral MongoDB per test file (`mongodb-memory-server`) — never touches the production Atlas cluster
 
 Organized around this API's own 4 layers (Interface → Application → Domain → Infrastructure):
@@ -203,6 +204,8 @@ Sentry here is error-tracking only, tracing turned off on purpose — its own fr
 New Relic alerts (error rate, response time, throughput) are wired to Email and Slack; each alert condition's Runbook URL points back to this README section, so a notification links straight to the context needed to act on it.
 
 Product search runs on Atlas Search (Lucene-based, relevance-ranked, typo-tolerant) when `ATLAS_SEARCH_ENABLED=true`, with an automatic `$regex` fallback if the query fails (index still building, or not on Atlas at all — `mongodb-memory-server`/local Mongo can't run `$search`, which is why local dev and tests always exercise the fallback path).
+
+Chose Atlas Search over a dedicated engine (Elasticsearch, Algolia) on purpose: it's bundled with the Atlas cluster already in use, so there's no second service to run and no sync pipeline to keep the index from drifting out of date with the source data — the right trade-off at this catalog size, where a standalone search cluster would be solving a scale problem this app doesn't have.
 
 ### Or with Docker
 
