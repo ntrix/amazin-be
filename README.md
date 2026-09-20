@@ -24,9 +24,9 @@ This is the REST API powering [Amazin' Amazim Store][fenx] — a long-term perso
 - Security headers via `helmet`, CORS enabled
 - Error tracking via [Sentry][sentry] — only real unhandled 500s, not expected `AppError` rejections
 - Structured logging via [pino][pino] (`pino-http`), replacing raw `console.*`
-- Typed error hierarchy (`lib/errors.js`) driving a single, consistent HTTP status code per failure — no more ad-hoc 402/406/411/417/503 misuse
-- Versioned DB migrations ([migrate-mongo][migratemongo]) instead of hand-run scripts: query indexes, and a data migration seeding realistic (and intentionally scarce, for one product) stock levels
-- Orders check stock atomically on creation (`findOneAndUpdate` + `$gte`/`$inc`) — rejects overselling without needing a full multi-document transaction
+- Typed error hierarchy (`lib/errors.js`) — one consistent HTTP status code per failure
+- Versioned DB migrations via [migrate-mongo][migratemongo]
+- Orders check stock atomically on creation — no overselling
 
 ## Tech stack
 
@@ -71,16 +71,16 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | 10c  | AWS Migration — HTTPS on the AWS endpoint via a free ACM certificate and a custom subdomain (`api.tiennguyen.de`) | Done |
 | 10d  | AWS Migration — CloudWatch Alarms (unhealthy target, 5xx errors) → SNS email, so downtime pages instead of waiting to be noticed | Done |
 | 10e  | AWS Migration — GitHub Actions CI/CD (build → ECR → ECS deploy) authenticating via OIDC, no AWS keys stored in GitHub | Done |
-| 11a  | Pre-commit tooling: Husky + lint-staged + commitlint (Conventional Commits enforced) | Done |
-| 11b  | Real ESLint config wired into CI — `eslint` had been a dependency for a while but never actually configured; the first real run caught a live crash bug (`adminUpdate` referencing an undefined variable) | Done |
-| 11c  | Structured logging (pino) replacing `console.*`; fixed a real unhandled-rejection crash in the contact form along the way (an unawaited SendGrid call) | Done |
-| 11d  | Typed `AppError` hierarchy — normalized 9 groups of previously-arbitrary HTTP status codes (401/402/403/406/411/417/503 misuse) to their correct meaning, one focused commit per group | Done |
-| 11e  | DB migrations via `migrate-mongo`: first real migration adds the query indexes that were missing on `category`/`seller`/`user`; a second seeds realistic (and intentionally scarce, for one product) stock levels for testing "out of stock" | Done |
-| 11f  | Orders check stock atomically on creation instead of trusting a stale read — rejects overselling, no full multi-document transaction needed for this shape of write | Done |
-| 11g  | Test suite grew from 14→22 files / 40→67 tests (~53%→70% line coverage), adding the 3 most business-critical flows (auth, product search, reviews) plus order payment confirmation and self-service profile updates | Done |
-| 11h  | Fixed a real seed-data bug: 2 duplicate product names were silently violating a unique index and truncating the demo dataset on every fresh seed | Done |
-| 11i  | Fixed a flaky CI test run: `mongoose.connect()` uses the single default connection, so running test files in parallel raced it between files and leaked data across them — serialized file execution instead | Done |
-| 12a  | Error tracking with [Sentry][sentry] (free Developer plan), wired into the existing error handler to report only real unhandled 500s, not expected `AppError` rejections | Done |
+| 11a  | Pre-commit tooling: Husky + lint-staged + commitlint | Done |
+| 11b  | Real ESLint config wired into CI — caught a live crash bug on the first run | Done |
+| 12a  | Structured logging with [pino][pino], replacing `console.*` | Done |
+| 12b  | Error tracking with [Sentry][sentry] — real 500s only, not expected `AppError`s | Done |
+| 12c  | Typed `AppError` hierarchy — normalized 9 misused HTTP status codes | Done |
+| 12d  | DB migrations via [migrate-mongo][migratemongo]: query indexes + a stock-level seed | Done |
+| 12e  | Orders check stock atomically on creation — no overselling, no lost-update race | Done |
+| 12f  | Test suite: 14→22 files, 40→67 tests, ~53%→70% line coverage | Done |
+| 12g  | Fixed a seed-data bug that silently truncated the demo dataset | Done |
+| 12h  | Fixed a flaky parallel-test race in the shared DB connection | Done |
 
 ## Architecture
 
@@ -180,7 +180,7 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 | `FROMMAIL` | Sender address for those emails | Must be a **verified sender** in SendGrid (**Settings → Sender Authentication**) — an unverified address will fail to send |
 | `TOMAIL` | Inbox that receives contact-form submissions | Any email address you own — no verification needed |
 | `NODE_ENV` | `development` or `production` | Set by you, not from a service |
-| `SENTRY_DSN` | Error tracking — reports real unhandled 500s, not expected `AppError` rejections (400/403/409/...) | [Sentry](https://sentry.io/) free Developer plan → create a Node project → DSN is shown on setup; optional, error tracking is skipped entirely if unset |
+| `SENTRY_DSN` | Error tracking (real 500s only) | [Sentry](https://sentry.io/) free plan → create a Node project → DSN shown on setup; optional, skipped if unset |
 
 ### Or with Docker
 
