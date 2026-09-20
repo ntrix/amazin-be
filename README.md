@@ -115,14 +115,17 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-  GitHub["GitHub: push to main"] --> Actions["GitHub Actions<br/>OIDC role"]
-  Actions -->|"push image"| ECR2[("ECR")]
-  Actions -->|"register + deploy"| Service2
+  GitHubBE["GitHub: BE push to main<br/><b>amazin-be</b>"] --> ActionsBE["GitHub BE Actions<br/>OIDC role"]
+  ActionsBE -->|"push image"| ECR2[("ECR")]
+  ActionsBE -->|"register + deploy"| Service2
 
   DNS["Namecheap DNS<br/>api.tiennguyen.de"] -. CNAME .-> ALB2
   ACM["ACM Certificate<br/>*.tiennguyen.de"] -. "TLS cert" .-> ALB2
 
-  ~~~Internet2([Internet]) -->|"HTTPS :443"| ALB2["ALB"]
+  GitHubFE["GitHub: FE push to nx<br/><b>amazin</b>"] --> ActionsFE["GitHub FE Actions"]
+  ActionsFE -->|"push image"| Netlify2(["Netlify<br/><b>active frontend</b>"]) .->|"?"| Render2
+  Netlify2 -->|"HTTPS :443"| ALB2["ALB"]
+  ActionsFE -->|"push image"| Vercel2(["Vercel<br/><i>suspense</i>"]) -->|"HTTPS :443"| Render2
   ALB2 -->|forwards| TG2["Target Group"]
   TG2 -->|"routes by IP"| Task2["Fargate Task"]
   Task2 -->|queries| Mongo2[("MongoDB Atlas")]
@@ -140,11 +143,13 @@ flowchart TB
 
   Task2 -. "unhandled errors" .-> Sentry[("Sentry")]
   Task2 -. "APM traces" .-> NewRelic[("New Relic")]
-  Task2 -. "docs (planned)" .-> OpenAPI["/api-docs"]
+  Task2 -. "docs (planned)" .-> OpenAPI["OpenAPI<br>/api-docs"]
   Sentry -. "alerts (planned)" .-> Slack[("Slack")]
   Sentry -. alerts .-> Email
+  NewRelic -. "alerts (planned)" .-> Slack
+  NewRelic -. alerts .-> Email
 
-  Render2[["Render<br/>unchanged, passive failover"]]
+  Render2[["Render<br/><i>passive failover, unchanged</i>"]]
 
   subgraph VPC2["VPC · eu-central-1"]
     ALB2
