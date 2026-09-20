@@ -24,14 +24,9 @@ describe("sign-in does not reveal whether an email is registered", () => {
       .post("/api/users/signin")
       .send({ email: "real@test.com", password: "wrongpassword" });
 
-    // on the old code the first case was 404 ("user not found") and the
-    // second was 401 ("wrong password") - an attacker could tell which
-    // emails have accounts just from the status code alone. Both must
-    // now answer with the same status.
-    // (the message text still differs - "Wrong password! N of 4
-    // attempts." vs the generic message - a smaller residual leak this
-    // fix doesn't address; that's the fail-attempt-counter UX feature,
-    // out of scope for a status-code fix)
+    // status must match so a caller can't tell which emails have an
+    // account; the "N of 4 attempts" message text still differs, a
+    // smaller residual leak this doesn't address
     expect(unknownEmail.status).toBe(401);
     expect(wrongPassword.status).toBe(401);
   });
