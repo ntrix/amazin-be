@@ -7,6 +7,7 @@ export default defineConfig({
     hookTimeout: 30000,
     env: {
       JWT_SECRET_A: "test-jwt-secret",
+      CORS_ORIGINS: "http://localhost:3000",
     },
     coverage: {
       provider: "v8",
