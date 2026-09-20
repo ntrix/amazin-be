@@ -6,6 +6,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
 import logger from "./lib/logger.js";
+import Sentry from "./lib/sentry.js";
 import { AppError } from "./lib/errors.js";
 import productRoute from "./routes/productRoute.js";
 import userRoute from "./routes/userRoute.js";
@@ -56,6 +57,7 @@ app.use((err, req, res, next) => {
     return res.status(err.statusCode).send({ message: err.message });
   }
   req.log.error({ err }, "unhandled request error");
+  Sentry.captureException(err);
   res.status(500).send({ message: "Internal server error" });
 });
 
