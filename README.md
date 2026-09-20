@@ -205,6 +205,8 @@ New Relic alerts (error rate, response time, throughput) are wired to Email and 
 
 Product search runs on Atlas Search (Lucene-based, relevance-ranked, typo-tolerant) when `ATLAS_SEARCH_ENABLED=true`, with an automatic `$regex` fallback if the query fails (index still building, or not on Atlas at all — `mongodb-memory-server`/local Mongo can't run `$search`, which is why local dev and tests always exercise the fallback path).
 
+Chose Atlas Search over a dedicated engine (Elasticsearch, Algolia) on purpose: it's bundled with the Atlas cluster already in use, so there's no second service to run and no sync pipeline to keep the index from drifting out of date with the source data — the right trade-off at this catalog size, where a standalone search cluster would be solving a scale problem this app doesn't have.
+
 ### Or with Docker
 
 ```
