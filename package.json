@@ -20,7 +20,7 @@
     "url": "git+https://github.com/ntrix/amazin-be.git"
   },
   "author": "ntien",
-  "license": "ISC",
+  "license": "MIT",
   "homepage": "https://github.com/ntrix/amazin#readme",
   "lint-staged": {
     "*.js": [
