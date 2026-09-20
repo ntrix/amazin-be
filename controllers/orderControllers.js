@@ -1,6 +1,30 @@
 import Order from "../models/orderModel.js";
+import Product from "../models/productModel.js";
 import { isOrderOwnerOrAdmin, isOrderSellerOrAdmin } from "../domain/authorization.js";
-import { BadRequestError } from "../lib/errors.js";
+import { BadRequestError, ConflictError } from "../lib/errors.js";
+
+async function reserveStock(orderItems) {
+  const reserved = [];
+  for (const item of orderItems) {
+    const product = await Product.findOneAndUpdate(
+      { _id: item.product, countInStock: { $gte: item.qty } },
+      { $inc: { countInStock: -item.qty } }
+    );
+    if (!product) {
+      await releaseStock(reserved);
+      throw new ConflictError(`Not enough stock for "${item.name}"`);
+    }
+    reserved.push(item);
+  }
+}
+
+async function releaseStock(orderItems) {
+  await Promise.all(
+    orderItems.map((item) =>
+      Product.updateOne({ _id: item.product }, { $inc: { countInStock: item.qty } })
+    )
+  );
+}
 
 const NOT_FOUND = "Order Not Found";
 const UNAUTHORIZED = "Unauthorized zone";
@@ -23,22 +47,31 @@ const orderControllers = {
   },
 
   async createOrder(req, res) {
-    if (req.body.orderItems.length === 0) {
+    const { orderItems } = req.body;
+    if (orderItems.length === 0) {
       throw new BadRequestError("Cart is empty");
     }
-    const order = new Order({
-      seller: req.body.orderItems[0].seller,
-      orderItems: req.body.orderItems,
-      shippingAddress: req.body.shippingAddress,
-      paymentMethod: req.body.paymentMethod,
-      itemsPrice: req.body.itemsPrice,
-      shippingPrice: req.body.shippingPrice,
-      taxPrice: req.body.taxPrice,
-      totalPrice: req.body.totalPrice,
-      user: req.user._id,
-    });
-    const createdOrder = await order.save();
-    res.status(201).send({ message: "New Order Created", order: createdOrder });
+
+    await reserveStock(orderItems);
+
+    try {
+      const order = new Order({
+        seller: orderItems[0].seller,
+        orderItems,
+        shippingAddress: req.body.shippingAddress,
+        paymentMethod: req.body.paymentMethod,
+        itemsPrice: req.body.itemsPrice,
+        shippingPrice: req.body.shippingPrice,
+        taxPrice: req.body.taxPrice,
+        totalPrice: req.body.totalPrice,
+        user: req.user._id,
+      });
+      const createdOrder = await order.save();
+      res.status(201).send({ message: "New Order Created", order: createdOrder });
+    } catch (err) {
+      await releaseStock(orderItems);
+      throw err;
+    }
   },
 
   async getOrder(req, res) {
