@@ -27,6 +27,11 @@
       "eslint --fix"
     ]
   },
+  "overrides": {
+    "mongoose-float": {
+      "mongoose": "$mongoose"
+    }
+  },
   "dependencies": {
     "@sendgrid/mail": "^7.4.6",
     "@sentry/node": "^10.75.0",
