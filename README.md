@@ -146,7 +146,7 @@ flowchart TB
   Task2 -. "docs (planned)" .-> OpenAPI["OpenAPI<br>/api-docs"]
   Sentry -. "alerts (planned)" .-> Slack[("Slack")]
   Sentry -. alerts .-> Email
-  NewRelic -. "alerts (planned)" .-> Slack
+  NewRelic -. alerts .-> Slack
   NewRelic -. alerts .-> Email
 
   Render2[["Render<br/><i>passive failover, unchanged</i>"]]
@@ -199,7 +199,7 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 
 Sentry here is error-tracking only, tracing turned off on purpose — its own free-tier tracing would overlap with a dedicated APM tool, and a dedicated APM gives better performance dashboards/alerting than a bolted-on tracing feature. Extra integration surface, but no double-counted signal.
 
-Sentry here is error-tracking only, tracing turned off on purpose — its own free-tier tracing would overlap with a dedicated APM tool, and a dedicated APM gives better performance dashboards/alerting than a bolted-on tracing feature. Extra integration surface, but no double-counted signal.
+New Relic alerts (error rate, response time, throughput) are wired to Email and Slack; each alert condition's Runbook URL points back to this README section, so a notification links straight to the context needed to act on it.
 
 ### Or with Docker
 
