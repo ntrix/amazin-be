@@ -3,7 +3,10 @@
 FROM node:24-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# --ignore-scripts: "prepare" runs husky, a devDependency not present
+# under --omit=dev - there are no git hooks to install in a container
+# anyway, so skip lifecycle scripts entirely
+RUN npm ci --omit=dev --ignore-scripts
 
 FROM node:24-alpine
 WORKDIR /app
