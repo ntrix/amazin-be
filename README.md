@@ -22,6 +22,7 @@ This is the REST API powering [Amazin' Amazim Store][fenx] — a long-term perso
 - Contact form submission (SendGrid)
 - Input validation via `express-validator` (`middleware/validate.js`)
 - Security headers via `helmet`, CORS enabled
+- Error tracking via [Sentry][sentry] — only real unhandled 500s, not expected `AppError` rejections
 - Structured logging via [pino][pino] (`pino-http`), replacing raw `console.*`
 - Typed error hierarchy (`lib/errors.js`) driving a single, consistent HTTP status code per failure — no more ad-hoc 402/406/411/417/503 misuse
 - Versioned DB migrations ([migrate-mongo][migratemongo]) instead of hand-run scripts: query indexes, and a data migration seeding realistic (and intentionally scarce, for one product) stock levels
@@ -76,8 +77,10 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | 11d  | Typed `AppError` hierarchy — normalized 9 groups of previously-arbitrary HTTP status codes (401/402/403/406/411/417/503 misuse) to their correct meaning, one focused commit per group | Done |
 | 11e  | DB migrations via `migrate-mongo`: first real migration adds the query indexes that were missing on `category`/`seller`/`user`; a second seeds realistic (and intentionally scarce, for one product) stock levels for testing "out of stock" | Done |
 | 11f  | Orders check stock atomically on creation instead of trusting a stale read — rejects overselling, no full multi-document transaction needed for this shape of write | Done |
-| 11g  | Test suite grew from 14→19 files / 40→56 tests (~53%→63% line coverage), adding the 3 most business-critical flows: auth, product search, reviews | Done |
+| 11g  | Test suite grew from 14→22 files / 40→67 tests (~53%→70% line coverage), adding the 3 most business-critical flows (auth, product search, reviews) plus order payment confirmation and self-service profile updates | Done |
 | 11h  | Fixed a real seed-data bug: 2 duplicate product names were silently violating a unique index and truncating the demo dataset on every fresh seed | Done |
+| 11i  | Fixed a flaky CI test run: `mongoose.connect()` uses the single default connection, so running test files in parallel raced it between files and leaked data across them — serialized file execution instead | Done |
+| 12a  | Error tracking with [Sentry][sentry] (free Developer plan), wired into the existing error handler to report only real unhandled 500s, not expected `AppError` rejections | Done |
 
 ## Architecture
 
@@ -177,6 +180,7 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 | `FROMMAIL` | Sender address for those emails | Must be a **verified sender** in SendGrid (**Settings → Sender Authentication**) — an unverified address will fail to send |
 | `TOMAIL` | Inbox that receives contact-form submissions | Any email address you own — no verification needed |
 | `NODE_ENV` | `development` or `production` | Set by you, not from a service |
+| `SENTRY_DSN` | Error tracking — reports real unhandled 500s, not expected `AppError` rejections (400/403/409/...) | [Sentry](https://sentry.io/) free Developer plan → create a Node project → DSN is shown on setup; optional, error tracking is skipped entirely if unset |
 
 ### Or with Docker
 
@@ -187,6 +191,7 @@ docker run -d --name amazin-be -p 5050:5000 --env-file .env amazin-be:local
 
 [node]: https://nodejs.org/
 [pino]: https://getpino.io/
+[sentry]: https://sentry.io/
 [migratemongo]: https://github.com/seppevs/migrate-mongo
 [express]: https://expressjs.com/
 [mongo]: https://www.mongodb.com/
