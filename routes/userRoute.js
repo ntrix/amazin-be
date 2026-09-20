@@ -5,6 +5,7 @@ import userControllers from "../controllers/userControllers.js";
 import validate from "../middleware/validate.js";
 import { checkToken } from "../auth/token.js";
 import { isAdmin } from "../auth/rolls.js";
+import devOnly from "../middleware/devOnly.js";
 
 const userRoute = express.Router();
 
@@ -12,7 +13,7 @@ userRoute.post("/contact", cors(), userControllers.postContact);
 
 userRoute.get("/top-sellers", asyncHandler(userControllers.getTopSellers));
 
-userRoute.get("/seed", asyncHandler(userControllers.seed));
+userRoute.get("/seed", devOnly, asyncHandler(userControllers.seed));
 
 userRoute.post(
   "/signin",
