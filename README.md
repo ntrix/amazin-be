@@ -22,6 +22,10 @@ This is the REST API powering [Amazin' Amazim Store][fenx] — a long-term perso
 - Contact form submission (SendGrid)
 - Input validation via `express-validator` (`middleware/validate.js`)
 - Security headers via `helmet`, CORS enabled
+- Structured logging via [pino][pino] (`pino-http`), replacing raw `console.*`
+- Typed error hierarchy (`lib/errors.js`) driving a single, consistent HTTP status code per failure — no more ad-hoc 402/406/411/417/503 misuse
+- Versioned DB migrations ([migrate-mongo][migratemongo]) instead of hand-run scripts: query indexes, and a data migration seeding realistic (and intentionally scarce, for one product) stock levels
+- Orders check stock atomically on creation (`findOneAndUpdate` + `$gte`/`$inc`) — rejects overselling without needing a full multi-document transaction
 
 ## Tech stack
 
@@ -66,6 +70,14 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | 10c  | AWS Migration — HTTPS on the AWS endpoint via a free ACM certificate and a custom subdomain (`api.tiennguyen.de`) | Done |
 | 10d  | AWS Migration — CloudWatch Alarms (unhealthy target, 5xx errors) → SNS email, so downtime pages instead of waiting to be noticed | Done |
 | 10e  | AWS Migration — GitHub Actions CI/CD (build → ECR → ECS deploy) authenticating via OIDC, no AWS keys stored in GitHub | Done |
+| 11a  | Pre-commit tooling: Husky + lint-staged + commitlint (Conventional Commits enforced) | Done |
+| 11b  | Real ESLint config wired into CI — `eslint` had been a dependency for a while but never actually configured; the first real run caught a live crash bug (`adminUpdate` referencing an undefined variable) | Done |
+| 11c  | Structured logging (pino) replacing `console.*`; fixed a real unhandled-rejection crash in the contact form along the way (an unawaited SendGrid call) | Done |
+| 11d  | Typed `AppError` hierarchy — normalized 9 groups of previously-arbitrary HTTP status codes (401/402/403/406/411/417/503 misuse) to their correct meaning, one focused commit per group | Done |
+| 11e  | DB migrations via `migrate-mongo`: first real migration adds the query indexes that were missing on `category`/`seller`/`user`; a second seeds realistic (and intentionally scarce, for one product) stock levels for testing "out of stock" | Done |
+| 11f  | Orders check stock atomically on creation instead of trusting a stale read — rejects overselling, no full multi-document transaction needed for this shape of write | Done |
+| 11g  | Test suite grew from 14→19 files / 40→56 tests (~53%→63% line coverage), adding the 3 most business-critical flows: auth, product search, reviews | Done |
+| 11h  | Fixed a real seed-data bug: 2 duplicate product names were silently violating a unique index and truncating the demo dataset on every fresh seed | Done |
 
 ## Architecture
 
@@ -134,8 +146,8 @@ flowchart TB
 
 Unit tests run on every push/PR via GitHub Actions, with coverage reported to Codecov and code smells to SonarQube Cloud (badges at the top of this page).
 
-- 14 test files, 40 tests
-- ~53% line coverage
+- 19 test files, 56 tests
+- ~63% line coverage
 - Real, ephemeral MongoDB per test file (`mongodb-memory-server`) — never touches the production Atlas cluster
 
 Organized around this API's own 4 layers (Interface → Application → Domain → Infrastructure):
@@ -143,7 +155,7 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 | Layer | Covers | Test files |
 | ----- | ------ | ---------- |
 | 1. Interface — routes, app-level middleware | CORS allowlist, rate-limiting, JSON/file body-size limits, upload temp-file location | `hardening`, `bodySizeLimit`, `uploadFileSizeLimit`, `uploadTempDir` |
-| 2. Application — controllers (orchestration) | Seed/backup guards, password-field exposure, product ownership enforcement, order buyer/seller/admin access, config API proxying (XSS-safe JSON), image-upload error handling, contact-form log sanitization | `seedGuard`, `passwordLeak`, `productOwnership`, `orderControllers`, `configXss`, `uploadErrorRejection`, `logInjection` |
+| 2. Application — controllers (orchestration) | Seed/backup guards, password-field exposure, product ownership enforcement, order buyer/seller/admin access, config API proxying (XSS-safe JSON), image-upload error handling, contact-form log sanitization, the 3 most business-critical flows (auth, product search/filter/pagination, reviews) | `seedGuard`, `passwordLeak`, `productOwnership`, `orderControllers`, `configXss`, `uploadErrorRejection`, `logInjection`, `authentication`, `getProducts`, `postReviews` |
 | 3. Domain — framework-independent business rules | Order/product ownership rules (`domain/authorization.js`) — plain functions, no Express/Mongoose, no DB needed to test | `authorization` |
 | 4. Infrastructure — persistence (models) + auth (JWT) | Unique email constraint + role defaults, required-field validation; JWT fail-fast when `JWT_SECRET_A` is missing instead of a public hardcoded fallback | `models`, `jwtSecret` |
 
@@ -174,6 +186,8 @@ docker run -d --name amazin-be -p 5050:5000 --env-file .env amazin-be:local
 ```
 
 [node]: https://nodejs.org/
+[pino]: https://getpino.io/
+[migratemongo]: https://github.com/seppevs/migrate-mongo
 [express]: https://expressjs.com/
 [mongo]: https://www.mongodb.com/
 [mongoose]: https://mongoosejs.com/
