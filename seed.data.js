@@ -249,19 +249,6 @@ export const movies = {
       category: "Video",
       countInStock: 20,
       description:
-        "Inspired by the adventures of Arsène Lupin, gentleman thief Assane Diop sets out to avenge his father for an injustice inflicted by a wealthy family.",
-      image:
-        "https://image.tmdb.org/t/p/original//sgxawbFB5Vi5OkPWQLNfl3dvkNJ.jpg^https://image.tmdb.org/t/p/original/dVHeJXUzHJJGadB2wvpuAn6fsdN.jpg",
-      name: "Lupin",
-      numReviews: 639,
-      price: 9,
-      rating: 3.95,
-    },
-    {
-      brand: "no trailer",
-      category: "Video",
-      countInStock: 20,
-      description:
         "As her 16th birthday nears, Sabrina must choose between the witch world of her family and the human world of her friends. Based on the Archie comic.",
       image:
         "https://image.tmdb.org/t/p/original//yxMpoHO0CXP5o9gB7IfsciilQS4.jpg^https://image.tmdb.org/t/p/original/8AdmUPTyidDebwIuakqkSt6u1II.jpg",
@@ -269,19 +256,6 @@ export const movies = {
       numReviews: 2396,
       price: 9,
       rating: 4.2,
-    },
-    {
-      brand: "no trailer",
-      category: "Video",
-      countInStock: 20,
-      description:
-        "When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces, and one strange little girl.",
-      image:
-        "https://image.tmdb.org/t/p/original//x2LSRK2Cm7MZhjluni1msVJ3wDF.jpg^https://image.tmdb.org/t/p/original/56v2KjBlU4XaOv9rVYEQypROD7P.jpg",
-      name: "Stranger Things",
-      numReviews: 7725,
-      price: 9,
-      rating: 4.3,
     },
     {
       brand: "no trailer",
