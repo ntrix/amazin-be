@@ -1,1 +1,10 @@
+NODE_VERSION_BIN="$HOME/.nvm/versions/node/v24.21.0/bin"
+[ -d "$NODE_VERSION_BIN" ] && export PATH="$NODE_VERSION_BIN:$PATH"
+
+# lint-staged picks its screen-redrawing "update" renderer whenever
+# process.stdout.isTTY is true. VS Code's Source Control commit button
+# attaches a pseudo-tty, which makes that renderer hang. TERM=dumb makes
+# lint-staged fall back to its plain sequential "verbose" renderer instead.
+export TERM=dumb
+
 npx lint-staged

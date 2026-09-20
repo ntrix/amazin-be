@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "ntrix",
+        "projectKey": "ntrix_amazin-be"
+    }
+}
