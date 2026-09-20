@@ -244,8 +244,8 @@ const productControllers = {
   async deleteProduct(req, res) {
     const product = await Product.findById(req.params.id);
     if (product) {
-      const deletedProduct = await product.remove();
-      res.send({ message: "Product Deleted", product: deletedProduct });
+      await product.deleteOne();
+      res.send({ message: "Product Deleted", product });
     } else {
       res.status(404).send({ message: "Product Not Found" });
     }

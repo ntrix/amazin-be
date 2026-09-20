@@ -110,8 +110,8 @@ const orderControllers = {
 
     if (!order) return res.status(404).send({ message: NOT_FOUND });
 
-    const deletedOrder = await order.remove();
-    return res.send({ message: "Order Deleted", order: deletedOrder });
+    await order.deleteOne();
+    return res.send({ message: "Order Deleted", order });
   },
 
   async updateOrderDeliver(req, res) {
