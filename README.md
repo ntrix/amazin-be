@@ -138,6 +138,9 @@ flowchart TB
   Alarms --> SNS["SNS Topic"]
   SNS --> Email([Email])
 
+  Task2 -. "unhandled errors" .-> Sentry[("Sentry")]
+  Task2 -. "APM traces" .-> NewRelic[("New Relic")]
+
   Render2[["Render<br/>unchanged, passive failover"]]
 
   subgraph VPC2["VPC · eu-central-1"]
