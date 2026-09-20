@@ -196,10 +196,13 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 | `NODE_ENV` | `development` or `production` | Set by you, not from a service |
 | `SENTRY_DSN` | Error tracking (real 500s only) | [Sentry](https://sentry.io/) free plan → create a Node project → DSN shown on setup; optional, skipped if unset |
 | `NEW_RELIC_LICENSE_KEY` | APM (latency, throughput, slow endpoints) | [New Relic](https://newrelic.com/) free tier → **Add data** → Node.js → license key shown there; optional, agent fully disabled if unset |
+| `ATLAS_SEARCH_ENABLED` | Switches product search from `$regex` to Atlas Search (relevance-ranked, fuzzy) | Set to `true` only after the `product_search` index (created by `migrations/`, see below) reports status **READY** in the Atlas UI — until then, or if unset, falls back to `$regex` automatically |
 
 Sentry here is error-tracking only, tracing turned off on purpose — its own free-tier tracing would overlap with a dedicated APM tool, and a dedicated APM gives better performance dashboards/alerting than a bolted-on tracing feature. Extra integration surface, but no double-counted signal.
 
 New Relic alerts (error rate, response time, throughput) are wired to Email and Slack; each alert condition's Runbook URL points back to this README section, so a notification links straight to the context needed to act on it.
+
+Product search runs on Atlas Search (Lucene-based, relevance-ranked, typo-tolerant) when `ATLAS_SEARCH_ENABLED=true`, with an automatic `$regex` fallback if the query fails (index still building, or not on Atlas at all — `mongodb-memory-server`/local Mongo can't run `$search`, which is why local dev and tests always exercise the fallback path).
 
 ### Or with Docker
 

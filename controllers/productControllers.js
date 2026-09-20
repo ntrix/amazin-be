@@ -53,7 +53,6 @@ const productControllers = {
         ? Number(req.query.rating)
         : 0;
 
-    const nameFilter = name ? { name: { $regex: name, $options: "i" } } : {};
     const sellerFilter = seller ? { seller } : {};
     const dealFilter = deal ? { deal: { $gte: deal } } : {};
     const priceFilter =
@@ -70,6 +69,38 @@ const productControllers = {
       bestselling: { numReviews: -1 },
       oldest: { _id: 1 },
     }[order] || { _id: -1 }; /* date */
+
+    if (name && process.env.ATLAS_SEARCH_ENABLED === "true") {
+      try {
+        const searched = await productControllers.searchWithAtlas({
+          name,
+          otherFilters: {
+            ...sellerFilter,
+            ...categoryFilter,
+            ...dealFilter,
+            ...priceFilter,
+            ...ratingFilter,
+          },
+          sortOrder: order ? sortOrder : null, // null = rank by relevance
+          pageSize,
+          page,
+        });
+        return res.send({
+          products: searched.products,
+          page,
+          count: searched.count,
+          category: category || "All",
+          pages: Math.ceil(searched.count / pageSize),
+        });
+      } catch (err) {
+        req.log.warn(
+          { err },
+          "Atlas Search query failed, falling back to regex search"
+        );
+      }
+    }
+
+    const nameFilter = name ? { name: { $regex: name, $options: "i" } } : {};
     const count = await Product.countDocuments({
       ...sellerFilter,
       ...nameFilter,
@@ -97,6 +128,38 @@ const productControllers = {
       category: category || "All",
       pages: Math.ceil(count / pageSize),
     });
+  },
+
+  // Full-text relevance search via Atlas Search - only reachable when
+  // ATLAS_SEARCH_ENABLED=true, which is only meaningful once the
+  // "product_search" index (see migrations/) reports status "READY" in
+  // the Atlas UI, since a missing/building index makes $search throw.
+  async searchWithAtlas({ name, otherFilters, sortOrder, pageSize, page }) {
+    const noLimit = pageSize > 500;
+    const dataPipeline = [
+      { $sort: sortOrder || { score: -1 } },
+      ...(noLimit ? [] : [{ $skip: pageSize * (page - 1) }, { $limit: pageSize }]),
+    ];
+    const [result] = await Product.aggregate([
+      {
+        $search: {
+          index: "product_search",
+          text: {
+            query: name,
+            path: ["name", "brand", "category", "description"],
+            fuzzy: { maxEdits: 1 },
+          },
+        },
+      },
+      { $match: otherFilters },
+      { $addFields: { score: { $meta: "searchScore" } } },
+      { $facet: { data: dataPipeline, totalCount: [{ $count: "count" }] } },
+    ]);
+    const products = await Product.populate(result.data, {
+      path: "seller",
+      select: "seller.name seller.logo",
+    });
+    return { products, count: result.totalCount[0]?.count || 0 };
   },
 
   async getCategories(req, res) {
