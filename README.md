@@ -23,6 +23,7 @@ This is the REST API powering [Amazin' Amazim Store][fenx] — a long-term perso
 - Input validation via `express-validator` (`middleware/validate.js`)
 - Security headers via `helmet`, CORS enabled
 - Error tracking via [Sentry][sentry] — only real unhandled 500s, not expected `AppError` rejections
+- APM via [New Relic][newrelic] — latency, throughput, slow endpoints
 - Structured logging via [pino][pino] (`pino-http`), replacing raw `console.*`
 - Typed error hierarchy (`lib/errors.js`) — one consistent HTTP status code per failure
 - Versioned DB migrations via [migrate-mongo][migratemongo]
@@ -81,6 +82,8 @@ Same philosophy as the frontend repo — small steps, revisited often, honestly 
 | 13a  | Test suite: 14→22 files, 40→67 tests, ~53%→70% line coverage | Done |
 | 13b  | Fixed a seed-data bug that silently truncated the demo dataset | Done |
 | 13c  | Fixed a flaky parallel-test race in the shared DB connection | Done |
+| 14a  | APM with [New Relic][newrelic] — kept separate from Sentry on purpose (see env var table) | Done |
+| 14b  | Fixed a Docker build crash: `npm ci --omit=dev` ran husky's `prepare` script, but husky itself isn't installed under `--omit=dev` | Done |
 
 ## Architecture
 
@@ -181,6 +184,9 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 | `TOMAIL` | Inbox that receives contact-form submissions | Any email address you own — no verification needed |
 | `NODE_ENV` | `development` or `production` | Set by you, not from a service |
 | `SENTRY_DSN` | Error tracking (real 500s only) | [Sentry](https://sentry.io/) free plan → create a Node project → DSN shown on setup; optional, skipped if unset |
+| `NEW_RELIC_LICENSE_KEY` | APM (latency, throughput, slow endpoints) | [New Relic](https://newrelic.com/) free tier → **Add data** → Node.js → license key shown there; optional, agent fully disabled if unset |
+
+Sentry here is error-tracking only, tracing turned off on purpose — its own free-tier tracing would overlap with a dedicated APM tool, and a dedicated APM gives better performance dashboards/alerting than a bolted-on tracing feature. Extra integration surface, but no double-counted signal.
 
 ### Or with Docker
 
@@ -189,9 +195,18 @@ docker build -t amazin-be:local .
 docker run -d --name amazin-be -p 5050:5000 --env-file .env amazin-be:local
 ```
 
+## Observability runbook
+
+Quick "where do I look" reference for the two tools above, once their keys are set.
+
+**Sentry** — [sentry.io](https://sentry.io/) → your org → **Issues**. Every entry here is a real unhandled 500, already deduped by stack trace. Open one → check the stack trace + breadcrumbs (the requests/actions leading up to it) → fix → mark **Resolved**. Nothing shows up here for expected rejections (bad input, wrong password, etc.) — if Issues is empty, that's the healthy state, not a sign it's broken.
+
+**New Relic** — [one.newrelic.com](https://one.newrelic.com/) → **APM & Services** → `amazin-be`. Start with **Summary**: response time and throughput over time, Apdex score, error rate. **Transactions** ranks routes by time spent — that's where a slow, unindexed query would show up as a route with high average response time, even though nothing ever errors or reaches Sentry.
+
 [node]: https://nodejs.org/
 [pino]: https://getpino.io/
 [sentry]: https://sentry.io/
+[newrelic]: https://newrelic.com/
 [migratemongo]: https://github.com/seppevs/migrate-mongo
 [express]: https://expressjs.com/
 [mongo]: https://www.mongodb.com/
