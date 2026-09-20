@@ -115,7 +115,8 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-  GitHubBE["GitHub: BE push to main<br/><b>amazin-be</b>"] --> ActionsBE["GitHub BE Actions<br/>OIDC role"]
+  GitHubBE["GitHub: BE push to main<br/><b>amazin-be</b>"] -.->|"native auto-deploy"| Render2
+  GitHubBE --> ActionsBE["GitHub BE Actions<br/>OIDC role"]
   ActionsBE -->|"push image"| ECR2[("ECR")]
   ActionsBE -->|"register + deploy"| Service2
 
@@ -163,8 +164,8 @@ flowchart TB
 
 Unit tests run on every push/PR via GitHub Actions, with coverage reported to Codecov and code smells to SonarQube Cloud (badges at the top of this page).
 
-- 19 test files, 56 tests
-- ~63% line coverage
+- 21 test files, 65 tests
+- ~70% line coverage
 - Real, ephemeral MongoDB per test file (`mongodb-memory-server`) — never touches the production Atlas cluster
 
 Organized around this API's own 4 layers (Interface → Application → Domain → Infrastructure):
