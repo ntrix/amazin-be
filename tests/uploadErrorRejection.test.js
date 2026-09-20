@@ -54,11 +54,6 @@ describe("upload failure never crashes the process and never leaks internals to 
       .field("productId", product._id.toString())
       .attach("images", Buffer.from("fake image"), "test.jpg");
 
-    // on the old code this was 503 and echoed "here" + the raw rejection
-    // reason straight into the response body; the internal error class
-    // hierarchy now routes anything unexpected to the generic 500 handler,
-    // which never leaks internals to the client (detail still reaches the
-    // server logs via req.log.error, see app.js)
     expect(res.status).toBe(500);
     expect(res.body.message).toBe("Internal server error");
   });
