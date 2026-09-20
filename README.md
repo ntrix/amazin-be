@@ -198,14 +198,6 @@ docker build -t amazin-be:local .
 docker run -d --name amazin-be -p 5050:5000 --env-file .env amazin-be:local
 ```
 
-## Observability runbook
-
-Quick "where do I look" reference for the two tools above, once their keys are set.
-
-**Sentry** — [sentry.io](https://sentry.io/) → your org → **Issues**. Every entry here is a real unhandled 500, already deduped by stack trace. Open one → check the stack trace + breadcrumbs (the requests/actions leading up to it) → fix → mark **Resolved**. Nothing shows up here for expected rejections (bad input, wrong password, etc.) — if Issues is empty, that's the healthy state, not a sign it's broken.
-
-**New Relic** — [one.newrelic.com](https://one.newrelic.com/) → **APM & Services** → `amazin-be`. Start with **Summary**: response time and throughput over time, Apdex score, error rate. **Transactions** ranks routes by time spent — that's where a slow, unindexed query would show up as a route with high average response time, even though nothing ever errors or reaches Sentry.
-
 [node]: https://nodejs.org/
 [pino]: https://getpino.io/
 [sentry]: https://sentry.io/
