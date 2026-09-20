@@ -47,4 +47,20 @@ describe("seed endpoints only run against an empty collection", () => {
     expect(res.status).toBe(409);
     expect(res.body.message).toBe("Already seeded");
   });
+
+  it("both seed endpoints are hidden (404) when NODE_ENV=production", async () => {
+    const original = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    try {
+      const users = await request(app).get("/api/users/seed");
+      const products = await request(app).get("/api/products/admin-seed-my-db");
+
+      expect(users.status).toBe(404);
+      expect(products.status).toBe(404);
+      expect(await User.countDocuments()).toBe(0);
+    } finally {
+      process.env.NODE_ENV = original;
+    }
+  });
 });
