@@ -132,8 +132,9 @@ flowchart TB
   Task2 -->|queries| Mongo2[("MongoDB Atlas")]
   Service2["ECS Service"] -->|"launches, restarts"| Task2
   Service2 -->|registers| TG2
+  Netlify2 -. "unhandled FE errors" .-> Sentry
 
-  ~~~Role2["IAM Execution Role"] -. "task assumes" .-> Task2
+  Role2["IAM Execution Role"] -. "task assumes" .-> Task2
   Role2 -. "pulls image" .-> ECR2
   Role2 -. "writes logs" .-> Logs2[("CloudWatch Logs")]
   Role2 -. "reads secrets" .-> SSM2[("SSM + KMS")]
@@ -145,13 +146,13 @@ flowchart TB
   Task2 -. "image upload" .-> Cloudinary[("Cloudinary")]
   Task2 -. "contact/alert email" .-> SendGrid[("SendGrid")]
 
-  Task2 -. "unhandled errors" .-> Sentry[("Sentry")]
-  Task2 -. "APM traces" .-> NewRelic[("New Relic")]
-  Task2 -. "docs (planned)" .-> OpenAPI["OpenAPI<br>/api-docs"]
-  Sentry -. "alerts (planned)" .-> Slack[("Slack")]
+  Sentry -. alerts .-> Slack[("Slack")]
   Sentry -. alerts .-> Email
   NewRelic -. alerts .-> Slack
   NewRelic -. alerts .-> Email
+  Task2 -. "unhandled BE errors" .-> Sentry[("Sentry<br>double layer")]
+  Task2 -. "APM traces" .-> NewRelic[("New Relic")]
+  Task2 -. "docs (planned)" .-> OpenAPI["OpenAPI<br>/api-docs"]
 
   Render2[["Render<br/><i>passive failover, unchanged</i>"]]
 
