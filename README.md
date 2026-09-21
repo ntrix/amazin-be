@@ -124,16 +124,16 @@ flowchart TB
   DNS["Namecheap DNS<br/>api.tiennguyen.de"] -. CNAME .-> ALB2
   ACM["ACM Certificate<br/>*.tiennguyen.de"] -. "TLS cert" .-> ALB2
 
-  GitHubFE["GitHub: FE push to nx<br/><b>amazin</b>"] --> ActionsFE["GitHub FE Actions"]
-  ActionsFE -->|"push image"| Netlify2(["Netlify<br/><b>active frontend</b>"]) .->|"?"| Render2
-  Netlify2 -->|"HTTPS :443"| ALB2["ALB"]
-  ActionsFE -->|"push image"| Vercel2(["Vercel<br/><i>suspense</i>"]) -->|"HTTPS :443"| Render2
+  GitHubFE["GitHub: FE push to nx<br/><b>amazin</b>"] --> ActionsFE["GitHub FE Actions<br/>CI"]
+  GitHubFE -.->|"native auto-deploy"| RenderFE(["Render<br/><b>active frontend, static site</b>"])
+  DNSFE["Namecheap DNS<br/>amazin.tiennguyen.de"] -. "CNAME<br/>Render-managed TLS" .-> RenderFE
+  RenderFE -->|"HTTPS :443"| ALB2["ALB"]
   ALB2 -->|forwards| TG2["Target Group"]
   TG2 -->|"routes by IP"| Task2["Fargate Task"]
   Task2 -->|queries| Mongo2[("MongoDB Atlas")]
   Service2["ECS Service"] -->|"launches, restarts"| Task2
   Service2 -->|registers| TG2
-  Netlify2 -. "unhandled FE errors" .-> Sentry
+  RenderFE -. "unhandled FE errors" .-> Sentry
 
   Role2["IAM Execution Role"] -. "task assumes" .-> Task2
   Role2 -. "pulls image" .-> ECR2
@@ -155,7 +155,7 @@ flowchart TB
   Task2 -. "APM traces" .-> NewRelic[("New Relic")]
   Task2 -. "docs (planned)" .-> OpenAPI["OpenAPI<br>/api-docs"]
 
-  Render2[["Render<br/><i>passive failover, unchanged</i>"]]
+  Render2[["Render<br/><i>BE passive failover, unchanged</i>"]]
 
   subgraph VPC2["VPC · eu-central-1"]
     ALB2
@@ -201,12 +201,13 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 | `FROMMAIL` | Sender address for those emails | Must be a **verified sender** in SendGrid (**Settings → Sender Authentication**) — an unverified address will fail to send |
 | `TOMAIL` | Inbox that receives contact-form submissions | Any email address you own — no verification needed |
 | `NODE_ENV` | `development` or `production` | Set by you, not from a service |
+| `CORS_ORIGINS` | Comma-separated list of frontend origins allowed to call this API with credentials | Every live frontend URL, e.g. `https://amazin.tiennguyen.de,http://localhost:3000` — no hardcoded fallback in code, since which host serves the frontend has changed more than once (Vercel → Netlify → Render) |
 | `SENTRY_DSN` | Error tracking (real 500s only) | [Sentry](https://sentry.io/) free plan → create a Node project → DSN shown on setup; optional, skipped if unset |
 | `NEW_RELIC_LICENSE_KEY` | APM (latency, throughput, slow endpoints) | [New Relic](https://newrelic.com/) free tier → **Add data** → Node.js → license key shown there; optional, agent fully disabled if unset |
 | `ATLAS_SEARCH_ENABLED` | Switches product search from `$regex` to Atlas Search (relevance-ranked, fuzzy) | Set to `true` only after the `product_search` index (created by `migrations/`, see below) reports status **READY** in the Atlas UI — until then, or if unset, falls back to `$regex` automatically |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` | "Continue with Google" login | [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services → Credentials** → **Create OAuth client ID** (type: Web application) → add `GOOGLE_CALLBACK_URL` as an Authorized redirect URI; route 404s if unset |
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_CALLBACK_URL` | "Continue with GitHub" login | [GitHub Developer Settings](https://github.com/settings/developers) → **OAuth Apps → New OAuth App** → set its Authorization callback URL to `GITHUB_CALLBACK_URL`; route 404s if unset |
-| `FE_ORIGIN` | Where OAuth login redirects back to after setting the refresh cookie | The frontend's own URL, e.g. `http://localhost:3000` in dev |
+| `FE_ORIGIN` | Where OAuth login redirects back to after setting the refresh cookie | The frontend's own URL — `http://localhost:3000` in dev, `https://amazin.tiennguyen.de` in production (must match whichever host in `CORS_ORIGINS` is actually live) |
 
 Sentry here is error-tracking only, tracing turned off on purpose — its own free-tier tracing would overlap with a dedicated APM tool, and a dedicated APM gives better performance dashboards/alerting than a bolted-on tracing feature. Extra integration surface, but no double-counted signal.
 

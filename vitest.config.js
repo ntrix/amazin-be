@@ -14,6 +14,14 @@ export default defineConfig({
       JWT_SECRET_A: "test-jwt-secret",
       JWT_REFRESH_SECRET: "test-jwt-refresh-secret",
       CORS_ORIGINS: "http://localhost:3000",
+      // Explicitly unset (not just omitted) - otherwise dotenv/config (loaded
+      // by app.js) fills these in from a developer's local .env, and the
+      // "OAuth disabled" tests only pass by accident of what secrets happen
+      // to not be configured on that machine.
+      GOOGLE_CLIENT_ID: "",
+      GOOGLE_CLIENT_SECRET: "",
+      GITHUB_CLIENT_ID: "",
+      GITHUB_CLIENT_SECRET: "",
     },
     coverage: {
       provider: "v8",
