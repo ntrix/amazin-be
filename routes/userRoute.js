@@ -31,9 +31,13 @@ userRoute.post(
   asyncHandler(userControllers.signUp)
 );
 
+userRoute.post("/refresh", asyncHandler(userControllers.refresh));
+
 userRoute.get("/:id", asyncHandler(userControllers.getUser));
 
 userRoute.use(checkToken);
+
+userRoute.post("/logout", asyncHandler(userControllers.logout));
 
 userRoute.put(
   "/profile",
