@@ -3,6 +3,7 @@ import express from "express";
 import helmet from "helmet";
 import path from "path";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
 import logger from "./lib/logger.js";
@@ -21,12 +22,13 @@ app.use(
   })
 );
 app.use(pinoHttp({ logger }));
+app.use(cookieParser());
 
 const allowedOrigins = (
   process.env.CORS_ORIGINS || "http://localhost:3000"
 ).split(",");
 allowedOrigins.push("https://amazin.vercel.app");
-app.use(cors({ origin: allowedOrigins }));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 app.use(
   "/api",
