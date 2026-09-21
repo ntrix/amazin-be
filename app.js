@@ -26,10 +26,13 @@ app.use(pinoHttp({ logger }));
 app.use(cookieParser());
 app.use(passport.initialize());
 
+// All live frontend origins, comma-separated - no hardcoded fallback here,
+// since which host is actually serving the frontend has changed more than
+// once (Vercel -> Netlify -> Render) and each change previously meant
+// editing this file. Set via CORS_ORIGINS on Render/AWS.
 const allowedOrigins = (
   process.env.CORS_ORIGINS || "http://localhost:3000"
 ).split(",");
-allowedOrigins.push("https://amazin.vercel.app");
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 app.use(
