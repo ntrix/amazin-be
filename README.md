@@ -14,6 +14,7 @@ This is the REST API powering [Amazin' Amazim Store][fenx] — a long-term perso
 ### Features
 
 - JWT authentication (sign in, register): short-lived (15m) access token in the response body, long-lived (7d) refresh token as an httpOnly cookie with rotation + server-side revocation on logout — bearer-token middleware gate (`checkToken`) and role guards (`isAdmin`, `isSeller`, `isSellerOrAdmin`)
+- OAuth login via Google and GitHub ([Passport](http://www.passportjs.org/), stateless — `session: false`): links to an existing password account by email on first login instead of creating a duplicate user; issues the same access/refresh token pair as password login, so every downstream auth check is provider-agnostic — each provider is its own optional feature, 404s cleanly if its client id/secret env vars are unset
 - Users: sign in, register, profile update, admin user management (list/edit/delete), top-seller listing
 - Products: list/search/filter, categories, CRUD (seller/admin only), product reviews
 - Orders: create, pay, deliver, list mine / list all (seller/admin), delete (admin)
@@ -202,6 +203,9 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 | `SENTRY_DSN` | Error tracking (real 500s only) | [Sentry](https://sentry.io/) free plan → create a Node project → DSN shown on setup; optional, skipped if unset |
 | `NEW_RELIC_LICENSE_KEY` | APM (latency, throughput, slow endpoints) | [New Relic](https://newrelic.com/) free tier → **Add data** → Node.js → license key shown there; optional, agent fully disabled if unset |
 | `ATLAS_SEARCH_ENABLED` | Switches product search from `$regex` to Atlas Search (relevance-ranked, fuzzy) | Set to `true` only after the `product_search` index (created by `migrations/`, see below) reports status **READY** in the Atlas UI — until then, or if unset, falls back to `$regex` automatically |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` | "Continue with Google" login | [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services → Credentials** → **Create OAuth client ID** (type: Web application) → add `GOOGLE_CALLBACK_URL` as an Authorized redirect URI; route 404s if unset |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_CALLBACK_URL` | "Continue with GitHub" login | [GitHub Developer Settings](https://github.com/settings/developers) → **OAuth Apps → New OAuth App** → set its Authorization callback URL to `GITHUB_CALLBACK_URL`; route 404s if unset |
+| `FE_ORIGIN` | Where OAuth login redirects back to after setting the refresh cookie | The frontend's own URL, e.g. `http://localhost:3000` in dev |
 
 Sentry here is error-tracking only, tracing turned off on purpose — its own free-tier tracing would overlap with a dedicated APM tool, and a dedicated APM gives better performance dashboards/alerting than a bolted-on tracing feature. Extra integration surface, but no double-counted signal.
 

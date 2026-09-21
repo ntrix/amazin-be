@@ -4,7 +4,15 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    // Only required for password-based accounts; OAuth-created users have no password.
+    password: {
+      type: String,
+      required: function () {
+        return !this.googleId && !this.githubId;
+      },
+    },
+    googleId: { type: String, unique: true, sparse: true },
+    githubId: { type: String, unique: true, sparse: true },
     isAdmin: { type: Boolean, default: false, required: true },
     isSeller: { type: Boolean, default: false, required: true },
     failLoginCount: { type: Number, default: 0 },
