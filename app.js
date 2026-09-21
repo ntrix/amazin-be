@@ -4,6 +4,7 @@ import helmet from "helmet";
 import path from "path";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import passport from "./auth/passport.js";
 import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
 import logger from "./lib/logger.js";
@@ -23,6 +24,7 @@ app.use(
 );
 app.use(pinoHttp({ logger }));
 app.use(cookieParser());
+app.use(passport.initialize());
 
 const allowedOrigins = (
   process.env.CORS_ORIGINS || "http://localhost:3000"

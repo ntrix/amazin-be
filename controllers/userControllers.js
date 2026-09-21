@@ -288,6 +288,19 @@ const userControllers = {
     clearRefreshCookie(res);
     res.send({ message: "Logged out" });
   },
+
+  // req.user here is the mongoose User doc set by passport's verify callback
+  // (auth/passport.js), not a decoded JWT. Redirects back to the frontend
+  // instead of responding with JSON, since this request came from a full
+  // browser navigation (the OAuth provider's redirect), not an XHR. The
+  // access token is deliberately left out of the redirect URL - the refresh
+  // cookie set here is enough for the frontend to mint one via POST /refresh,
+  // the same flow already used for silent token renewal.
+  async oauthCallback(req, res) {
+    setRefreshCookie(res, generateRefreshToken(req.user));
+    const feOrigin = process.env.FE_ORIGIN || "http://localhost:3000";
+    res.redirect(`${feOrigin}/oauth-callback`);
+  },
 };
 
 export default userControllers;
