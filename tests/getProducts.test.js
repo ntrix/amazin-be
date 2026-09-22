@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import request from "supertest";
+import mongoose from "mongoose";
 import app from "../app.js";
 import Product from "../models/productModel.js";
 import { startTestDb, stopTestDb, clearTestDb } from "./testDb.js";
@@ -96,5 +97,65 @@ describe("getProducts", () => {
     } finally {
       delete process.env.ATLAS_SEARCH_ENABLED;
     }
+  });
+
+  describe("seller filter, category=Video fallback", () => {
+    it("falls back to whoever actually owns the Video catalog when the requested seller id doesn't match", async () => {
+      const realOwner = new mongoose.Types.ObjectId();
+      const staleId = new mongoose.Types.ObjectId();
+      await Product.create({
+        name: "Some Movie",
+        category: "Video",
+        description: "d",
+        price: 9,
+        countInStock: 5,
+        seller: realOwner,
+      });
+
+      const res = await request(app)
+        .get("/api/products")
+        .query({ category: "Video", seller: staleId.toString() });
+
+      expect(res.status).toBe(200);
+      expect(res.body.products).toHaveLength(1);
+      expect(res.body.products[0].name).toBe("Some Movie");
+    });
+
+    it("uses the requested seller as-is when it does own Video products", async () => {
+      const owner = new mongoose.Types.ObjectId();
+      const otherSeller = new mongoose.Types.ObjectId();
+      await Product.create([
+        { name: "Owner Movie", category: "Video", description: "d", price: 9, countInStock: 5, seller: owner },
+        { name: "Other Movie", category: "Video", description: "d", price: 9, countInStock: 5, seller: otherSeller },
+      ]);
+
+      const res = await request(app)
+        .get("/api/products")
+        .query({ category: "Video", seller: owner.toString() });
+
+      expect(res.status).toBe(200);
+      expect(res.body.products).toHaveLength(1);
+      expect(res.body.products[0].name).toBe("Owner Movie");
+    });
+
+    it("does not fall back for a non-Video seller filter (a real storefront with 0 products stays 0)", async () => {
+      const emptySeller = new mongoose.Types.ObjectId();
+      const otherSeller = new mongoose.Types.ObjectId();
+      await Product.create({
+        name: "Someone Else's Shirt",
+        category: "Shirts",
+        description: "d",
+        price: 9,
+        countInStock: 5,
+        seller: otherSeller,
+      });
+
+      const res = await request(app)
+        .get("/api/products")
+        .query({ seller: emptySeller.toString() });
+
+      expect(res.status).toBe(200);
+      expect(res.body.products).toHaveLength(0);
+    });
   });
 });
