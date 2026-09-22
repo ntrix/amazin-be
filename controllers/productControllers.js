@@ -53,7 +53,24 @@ const productControllers = {
         ? Number(req.query.rating)
         : 0;
 
-    const sellerFilter = seller ? { seller } : {};
+    let sellerFilter = seller ? { seller } : {};
+    // The FE's video screen asks for a specific, fixed demo seller id
+    // (REACT_APP_SELLER) that owns the "Video" category catalog - fine in
+    // an environment sharing the real seeded DB, but a fresh local seed
+    // (seedDB below) assigns that catalog to whichever user happens to be
+    // found first, getting a different, unpredictable id every time. Rather
+    // than 0 results on a mismatch, fall back to whoever actually owns the
+    // Video catalog right now. Scoped to category=Video only - a real
+    // seller's storefront (/seller/:id) must still show exactly 0 products
+    // if that seller truly has none, never silently substitute another
+    // seller's catalog.
+    if (seller && category === "Video") {
+      const hasMatch = await Product.exists({ seller, category });
+      if (!hasMatch) {
+        const anyVideoProduct = await Product.findOne({ category }).select("seller");
+        sellerFilter = anyVideoProduct ? { seller: anyVideoProduct.seller } : {};
+      }
+    }
     const dealFilter = deal ? { deal: { $gte: deal } } : {};
     const priceFilter =
       min && !max
