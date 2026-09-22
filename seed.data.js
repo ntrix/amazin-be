@@ -1,5 +1,16 @@
 import bcrypt from "bcryptjs";
 
+// The demo products below used to reference /images/p1.jpg..p6.jpg, static
+// files that were never actually added to the frontend repo - broken images
+// on every fresh seed (only ever unnoticed because production's real DB is
+// never freshly seeded). Cloudinary stores uploads under the *uploading*
+// product's own _id, and re-seeding always mints a brand-new random _id, so
+// a relative path can't be reused here - these are full URLs borrowed from
+// production's real, same-brand products (verified live, 200 OK) instead.
+const CDN = "https://res.cloudinary.com/dctcnhecv/image/upload/amazin/";
+const cdnImages = (realProductId, ...publicIds) =>
+  publicIds.map((publicId) => `${CDN}${realProductId}/${publicId}`).join("^");
+
 export const data = {
   users: [
     {
@@ -33,7 +44,15 @@ export const data = {
     {
       name: "Nike Slim Shirt",
       category: "Shirts",
-      image: "/images/p1.jpg",
+      image: cdnImages(
+        "5fdaadde01ee6d1317accf10",
+        "kr8crh7fqvzlntxcu2cr",
+        "h84nin6tlzuhy4kddrkc",
+        "rmk0j84vlijvx4whe6gm",
+        "mhrlgmub1rbgkocdrgy1",
+        "iizrndnohultdcwdz3b5",
+        "elhuircb50mndjwuplb2"
+      ),
       price: 120,
       countInStock: 10,
       brand: "Nike",
@@ -44,7 +63,12 @@ export const data = {
     {
       name: "Adidas Fit Shirt",
       category: "Shirts",
-      image: "/images/p2.jpg",
+      image: cdnImages(
+        "5fdaadde01ee6d1317accf11",
+        "vdnwph4wnbu1meivt9yx",
+        "c742if8emwtffpadyltx",
+        "ccahib106w8vwwcdnyfv"
+      ),
       price: 100,
       countInStock: 20,
       brand: "Adidas",
@@ -55,7 +79,14 @@ export const data = {
     {
       name: "Lacoste Free Shirt",
       category: "Shirts",
-      image: "/images/p3.jpg",
+      image: cdnImages(
+        "5fdaadde01ee6d1317accf12",
+        "t14i3gotkfhyjnasjmcb",
+        "bdoyf4dwdzlz6fhgrixd",
+        "taxsd4svxtilfrgy586n",
+        "qvsbkzdqmnnmkddcuwkx",
+        "jh8vqrpid2bvmzj88mvy"
+      ),
       price: 220,
       countInStock: 0,
       brand: "Lacoste",
@@ -66,7 +97,16 @@ export const data = {
     {
       name: "Nike Slim Pant",
       category: "Pants",
-      image: "/images/p4.jpg",
+      image: cdnImages(
+        "5fdaadde01ee6d1317accf13",
+        "vvhejq48kjyssigdkyqk",
+        "zyorvkfazjhagcnmxc8v",
+        "mruosy5r8n44zpzgi0og",
+        "vpihxnbbi9lzpgau64dt",
+        "yqywqbzk0e6znkb0qlc5",
+        "leqayymsqpqk0itdyhvc",
+        "achxejjpoyu2u4j8rqzd"
+      ),
       price: 78,
       countInStock: 15,
       brand: "Nike",
@@ -77,7 +117,12 @@ export const data = {
     {
       name: "Puma Slim Pant",
       category: "Pants",
-      image: "/images/p5.jpg",
+      image: cdnImages(
+        "5fdaadde01ee6d1317accf14",
+        "nfpwspan7wtgbscubt2o",
+        "cha2yfzqasdwa4z2esei",
+        "ygdol1pqyhplgf3yal1c"
+      ),
       price: 65,
       countInStock: 5,
       brand: "Puma",
@@ -88,7 +133,16 @@ export const data = {
     {
       name: "Adidas Fit Pant",
       category: "Pants",
-      image: "/images/p6.jpg",
+      image: cdnImages(
+        "5fdaadde01ee6d1317accf15",
+        "jwqpbwbfm1plwckxesit",
+        "tcdjlyxe1gafxtogkgkk",
+        "fxgpux8wylcbj65hun7i",
+        "pkzmbcc5b7oty7redfvs",
+        "oyld6xepnk2wsnrf4niq",
+        "yx1ugdsoavhirbvq0j6f",
+        "htnwh1oroiocjvnvjwwf"
+      ),
       price: 139,
       countInStock: 12,
       brand: "Adidas",

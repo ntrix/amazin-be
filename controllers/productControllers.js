@@ -1,4 +1,4 @@
-import { movies } from "../seed.data.js";
+import { data, movies } from "../seed.data.js";
 import Order from "../models/orderModel.js";
 import Product from "../models/productModel.js";
 import User from "../models/userModel.js";
@@ -190,10 +190,12 @@ const productControllers = {
     }
     const seller = await User.findOne({ isSeller: true });
     if (seller) {
-      const products = movies.products.map((product) => ({
-        ...product,
-        seller: seller._id,
-      }));
+      const products = [...data.products, ...movies.products].map(
+        (product) => ({
+          ...product,
+          seller: seller._id,
+        })
+      );
       const createdProducts = await Product.insertMany(products);
       res.send({ createdProducts });
     } else {
