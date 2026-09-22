@@ -1,0 +1,11 @@
+services:
+  amazin-be:
+    build: .
+    # Reads PORT from .env and maps it 1:1 - the app listens on whatever
+    # PORT says, not a hardcoded 5000, so a mismatched mapping (e.g. when
+    # PORT was changed locally to dodge a port conflict) silently drops
+    # every request with "connection reset".
+    ports:
+      - "${PORT:-5000}:${PORT:-5000}"
+    env_file:
+      - .env

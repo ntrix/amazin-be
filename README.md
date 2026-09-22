@@ -188,6 +188,8 @@ Organized around this API's own 4 layers (Interface → Application → Domain �
 2. Create a `.env` file with the variables below
 3. `npm start` (or `npm run devstart` for auto-reload during development)
 
+Or via Docker — `docker compose up` (reads `PORT` and every other variable from `.env` automatically, maps the port 1:1 so it still works if you've changed `PORT` to dodge a local conflict). Running the image directly with plain `docker run` instead works too, but only if you remember `--env-file .env` and match `-p` to whatever `PORT` is set to — easy to get wrong, which `docker compose up` avoids entirely.
+
 | Variable | What it's for | Where to get it |
 | -------- | -------------- | ---------------- |
 | `MONGODB_URL` | Database connection string | [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) — free M0 cluster, add a database user, then **Connect → Drivers** and copy the URI (fill in the password yourself) |
