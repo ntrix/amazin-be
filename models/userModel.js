@@ -15,7 +15,6 @@ const userSchema = new mongoose.Schema(
     githubId: { type: String, unique: true, sparse: true },
     isAdmin: { type: Boolean, default: false, required: true },
     isSeller: { type: Boolean, default: false, required: true },
-    failLoginCount: { type: Number, default: 0 },
     refreshTokenVersion: { type: Number, default: 0 },
     currency: { type: String },
     seller: {

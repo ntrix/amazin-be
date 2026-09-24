@@ -10,12 +10,11 @@ afterAll(stopTestDb);
 afterEach(clearTestDb);
 
 describe("signIn", () => {
-  it("succeeds with correct credentials, returns a token, and resets the fail counter", async () => {
-    const user = await User.create({
+  it("succeeds with correct credentials and returns a token", async () => {
+    await User.create({
       name: "Buyer",
       email: "buyer@test.com",
       password: bcrypt.hashSync("Password123", 8),
-      failLoginCount: 2,
     });
 
     const res = await request(app)
@@ -25,7 +24,6 @@ describe("signIn", () => {
     expect(res.status).toBe(200);
     expect(res.body.token).toBeTruthy();
     expect(res.body.email).toBe("buyer@test.com");
-    expect((await User.findById(user._id)).failLoginCount).toBe(0);
   });
 
   it("rejects a wrong password and increments the fail counter", async () => {

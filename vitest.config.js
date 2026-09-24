@@ -10,10 +10,14 @@ export default defineConfig({
     // in parallel races that connection between files and causes flaky
     // cross-test data bleed, so keep file execution serialized
     fileParallelism: false,
+    setupFiles: ["./tests/setup.js"],
     env: {
       JWT_SECRET_A: "test-jwt-secret",
       JWT_REFRESH_SECRET: "test-jwt-refresh-secret",
       CORS_ORIGINS: "http://localhost:3000",
+      // Mocked by tests/setup.js (ioredis-mock) - real value would only
+      // matter if something read it before the mock is installed.
+      REDIS_URL: "redis://mock:6379",
       // Explicitly unset (not just omitted) - otherwise dotenv/config (loaded
       // by app.js) fills these in from a developer's local .env, and the
       // "OAuth disabled" tests only pass by accident of what secrets happen
