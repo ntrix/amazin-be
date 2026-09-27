@@ -227,6 +227,13 @@ docker build -t amazin-be:local .
 docker run -d --name amazin-be -p 5050:5000 --env-file .env amazin-be:local
 ```
 
+
+## Engineering documentation
+[`CLAUDE.md`](./CLAUDE.md) — working agreement for AI-assisted development
+(architecture constraints, known gaps, commit rules).
+[`amazin-ENGINEERING.md`](./amazin-ENGINEERING.md) — architectural decisions
+with trade-off reasoning across both repos.
+
 [node]: https://nodejs.org/
 [pino]: https://getpino.io/
 [sentry]: https://sentry.io/
