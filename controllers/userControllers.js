@@ -11,7 +11,7 @@ import {
 } from "../auth/token.js";
 import User from "../models/userModel.js";
 import { data } from "../seed.data.js";
-import logger from "../lib/logger.js";
+import loginLockout from "../auth/loginLockout.js";
 
 const NOT_FOUND = "User Not Found";
 
@@ -66,15 +66,15 @@ const userControllers = {
         .status(401)
         .send({ message: "Invalid username or email or password" });
 
-    let count = (user.failLoginCount || 0) + 1;
+    if (await loginLockout.isLocked(req.body.email)) {
+      return res.status(429).send({
+        message:
+          "Too many fail attempts! Please try again in 15 minutes or reset your password.",
+      });
+    }
 
     if (bcrypt.compareSync(req.body.password, user.password)) {
-      user.failLoginCount = 0; //reset fail attempts count by success login
-      try {
-        await user.save();
-      } catch {
-        return res.status(500).send({ message: "Failed to update login state" });
-      }
+      await loginLockout.resetFailures(req.body.email);
       setRefreshCookie(res, generateRefreshToken(user));
       return res.send({
         _id: user._id,
@@ -87,12 +87,13 @@ const userControllers = {
       });
     }
 
-    user.failLoginCount = count;
-    if (count < 3)
-      res
+    const count = await loginLockout.recordFailure(req.body.email);
+    if (count < loginLockout.WARNING_THRESHOLD)
+      return res
         .status(401)
         .send({ message: "Wrong password! " + count + " of 4 attempts." });
-    else if (count < 5) {
+
+    if (count < loginLockout.LOCK_THRESHOLD) {
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
       const msg = {
         to: user.email,
@@ -103,38 +104,20 @@ const userControllers = {
       };
       try {
         await sgMail.send(msg);
-        res.status(401).send({
+        return res.status(401).send({
           message: `${count} fail attempts. A warning message has been sent to the registered email address!`,
         });
       } catch (err) {
-        res.status(401).send({
+        return res.status(401).send({
           message: `${count} fail attempts. A warning message has been sent, but the registered email cannot receive any message! Error: ${err}`,
         });
       }
-    } else {
-      //case count = timeId + 5, is > 5
-      clearTimeout(user.failLoginCount - 5); //-5 to get back the right timeoutId
-      const waitingSingleton = setTimeout(async () => {
-        user.failLoginCount = 3;
-        try {
-          await user.save();
-        } catch (err) {
-          // response was already sent 15 minutes ago; nothing to send this to
-          logger.error({ err, userId: user._id }, "failed to reset login lockout state");
-        }
-      }, 15 * 60 * 1000);
-      user.failLoginCount = waitingSingleton + 5; //save timeoutId instead the counter, +5 for surely have more than 4 fail attempts
-      res.status(429).send({
-        message:
-          "Too many fail attempts! Please try again in 15 minutes or reset your password.",
-      });
     }
-    try {
-      await user.save();
-    } catch (err) {
-      // response was already sent above; nothing to send this to
-      logger.error({ err, userId: user._id }, "failed to persist failed-login count");
-    }
+
+    return res.status(429).send({
+      message:
+        "Too many fail attempts! Please try again in 15 minutes or reset your password.",
+    });
   },
 
   async signUp(req, res) {
