@@ -1,3 +1,5 @@
+case "$(git config user.email)" in *@casavi.de) echo "Blocked: work identity"; exit 1;; esac
+
 NODE_VERSION_BIN="$HOME/.nvm/versions/node/v24.21.0/bin"
 [ -d "$NODE_VERSION_BIN" ] && export PATH="$NODE_VERSION_BIN:$PATH"
 

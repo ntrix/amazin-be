@@ -1,1 +1,2 @@
+grep -qiE '(Co-authored-by|Generated with)' "$1" && { echo "Blocked: no AI attribution trailers"; exit 1; }
 npx --no -- commitlint --edit "$1"
